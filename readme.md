@@ -6,3 +6,11 @@
 yarn
 yarn start
 ```
+
+## Build
+
+```bash
+yarn build
+```
+
+Output folder is `dist`
