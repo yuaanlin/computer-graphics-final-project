@@ -44,7 +44,7 @@ class Application {
 
   constructor() {
     const canvas = document.querySelector('#glCanvas');
-    this.gl = canvas.getContext('webgl');
+    this.gl = canvas.getContext('webgl2');
 
     this.loadMeshes();
     this.loadTextures();
@@ -115,7 +115,7 @@ class Application {
         this.meshes[key].buffers = this.createBuffers(
           mesh.vertices,
           mesh.indices,
-          mesh.vertexMaterialIndices,
+          mesh.indices,
           mesh.vertexNormals
           // Cube.vertexPositions,
           // Cube.indices,
@@ -195,7 +195,7 @@ class Application {
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
     gl.bufferData(
       gl.ELEMENT_ARRAY_BUFFER,
-      new Uint16Array(indices),
+      new Uint32Array(indices),
       gl.STATIC_DRAW
     );
 
@@ -279,12 +279,11 @@ class Application {
     ]);
 
     {
-      const numComponents = 3; // pull out 2 values per iteration
-      const type = gl.FLOAT; // the data in the buffer is 32bit floats
-      const normalize = false; // don't normalize
-      const stride = 0; // how many bytes to get from one set of values to the next
-      // 0 = use type and numComponents above
-      const offset = 0; // how many bytes inside the buffer to start from
+      const numComponents = 3;
+      const type = gl.FLOAT;
+      const normalize = false;
+      const stride = 0;
+      const offset = 0;
       gl.bindBuffer(gl.ARRAY_BUFFER, buffers.position);
       gl.vertexAttribPointer(
         attribLocations.vertexPosition,
@@ -319,11 +318,11 @@ class Application {
 
     // tell webgl how to pull out the texture coordinates from buffer
     {
-      const num = 2; // every coordinate composed of 2 values
-      const type = gl.FLOAT; // the data in the buffer is 32 bit float
-      const normalize = false; // don't normalize
-      const stride = 0; // how many bytes to get from one set to the next
-      const offset = 0; // how many bytes inside the buffer to start from
+      const num = 1;
+      const type = gl.FLOAT;
+      const normalize = false;
+      const stride = 0;
+      const offset = 0;
       gl.bindBuffer(gl.ARRAY_BUFFER, buffers.textureCoord);
       gl.vertexAttribPointer(
         attribLocations.textureCoord,
@@ -369,10 +368,10 @@ class Application {
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.indices);
 
     {
-      const vertexCount = 36485;
-      const type = gl.UNSIGNED_SHORT;
+      const indexCount = 109314;
+      const type = gl.UNSIGNED_INT;
       const offset = 0;
-      gl.drawElements(gl.TRIANGLES, vertexCount, type, offset);
+      gl.drawElements(gl.TRIANGLES, indexCount, type, offset);
     }
   }
 }
