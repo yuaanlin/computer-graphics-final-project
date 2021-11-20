@@ -9,6 +9,7 @@
     "webgl-obj-loader": "^2.0.8"
   },
   "scripts": {
-    "start": "node_modules/http-server/bin/http-server"
+    "start": "node_modules/http-server/bin/http-server",
+    "build": "bash build.sh"
   }
 }
