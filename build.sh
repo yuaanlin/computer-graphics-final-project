@@ -18,3 +18,9 @@ cp node_modules/gl-matrix/gl-matrix-min.js dist/js/gl-matrix-min.js
 
 # Copy assets
 cp -r assets dist
+
+# Print the result
+if command -v tree 
+then
+	tree dist
+fi
