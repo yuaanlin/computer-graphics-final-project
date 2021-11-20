@@ -13,3 +13,4 @@ cp node_modules/webgl-obj-loader/dist/webgl-obj-loader.min.js dist/js/webgl-obj-
 cp node_modules/gl-matrix/gl-matrix-min.js dist/js/gl-matrix-min.js
 cp js/*.js dist/js/
 
+cp -r assets dist
