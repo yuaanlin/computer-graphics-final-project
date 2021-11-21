@@ -1,38 +1,35 @@
-window.onload = main;
-
-function main() {
-  const app = new Application();
-  app.run();
-}
+import { mat4 } from 'gl-matrix';
+import { OBJ } from 'webgl-obj-loader';
+import { fsSource, loadShader, vsSource } from './shader';
+import {
+  Application3DObject,
+  ApplicationAttributeLocations,
+  ApplicationMeshesInfo,
+  ApplicationTexturesInfo,
+  ApplicationUniformLocations,
+  CreateBufferResult,
+} from './type';
+import { isPowerOf2 } from './utils';
 
 class Application {
-  gl = null;
-  shaderProgram = null;
+  gl: WebGL2RenderingContext | null = null;
+  shaderProgram: WebGLProgram | null = null;
 
-  attribLocations = {
-    vertexPosition: null,
-    textureCoord: null,
-    vertexNormal: null,
-  };
+  attribLocations: ApplicationAttributeLocations | null = null;
 
-  uniformLocations = {
-    projectionMatrix: null,
-    modelViewMatrix: null,
-    normalMatrix: null,
-    uSampler: null,
-  };
+  uniformLocations: ApplicationUniformLocations | null = null;
 
-  meshes = {
+  meshes: ApplicationMeshesInfo = {
     bunny: { path: 'assets/bunny.obj', mesh: null, buffers: null },
   };
 
-  textures = {
+  textures: ApplicationTexturesInfo = {
     bunny: { path: 'assets/bunny_texture.jpg', texture: null },
   };
 
-  objects = [
+  objects: Application3DObject[] = [
     {
-      id: 0,
+      id: '1',
       mesh: 'bunny',
       texture: 'bunny',
       position: { x: 0, y: 0, z: -10 },
@@ -43,12 +40,41 @@ class Application {
   currentTime = 0;
 
   constructor() {
-    const canvas = document.querySelector('#glCanvas');
+    const canvas = document.createElement('canvas');
+
+    canvas.id = 'glCanvas';
+    canvas.style.position = 'fixed';
+    canvas.style.top = '0';
+    canvas.style.left = '0';
+    canvas.style.width = '100%';
+    canvas.style.height = '100vh';
+    canvas.style.zIndex = '100';
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const existingCanvas = document.getElementById(canvas.id);
+    if (existingCanvas && existingCanvas.parentElement) {
+      existingCanvas.parentElement.removeChild(existingCanvas);
+    }
+
+    if (!canvas) {
+      return;
+    }
+    document.body.appendChild(canvas);
+
     this.gl = canvas.getContext('webgl2');
+
+    if (!this.gl) {
+      return;
+    }
 
     this.loadMeshes();
     this.loadTextures();
     this.shaderProgram = this.initShaderProgram(vsSource, fsSource);
+
+    if (!this.shaderProgram) {
+      return;
+    }
 
     this.attribLocations = {
       vertexPosition: this.gl.getAttribLocation(
@@ -82,12 +108,24 @@ class Application {
     };
   }
 
-  initShaderProgram(vsSource, fsSource) {
+  initShaderProgram(vsSource: string, fsSource: string) {
     const gl = this.gl;
+
+    if (!gl) {
+      console.error('WebGL not supported');
+      return null;
+    }
+
     const vertexShader = loadShader(gl, gl.VERTEX_SHADER, vsSource);
     const fragmentShader = loadShader(gl, gl.FRAGMENT_SHADER, fsSource);
 
     const shaderProgram = gl.createProgram();
+
+    if (!shaderProgram || !vertexShader || !fragmentShader) {
+      console.error('Unable to create shader program');
+      return null;
+    }
+
     gl.attachShader(shaderProgram, vertexShader);
     gl.attachShader(shaderProgram, fragmentShader);
     gl.linkProgram(shaderProgram);
@@ -104,32 +142,42 @@ class Application {
   }
 
   loadMeshes() {
-    let m = {};
+    let m: { [key: string]: string } = {};
     Object.keys(this.meshes).map((key) => {
       m[key] = this.meshes[key].path;
     });
-    OBJ.downloadMeshes(m, (res) => {
-      Object.keys(this.meshes).map((key) => {
-        const mesh = res[key];
-        this.meshes[key].mesh = res[key];
-        this.meshes[key].buffers = this.createBuffers(
-          mesh.vertices,
-          mesh.indices,
-          mesh.indices,
-          mesh.vertexNormals
-          // Cube.vertexPositions,
-          // Cube.indices,
-          // Cube.textureCoordinates,
-          // Cube.vertexNormals
-        );
-      });
-    });
+    OBJ.downloadMeshes(
+      m,
+      (res) => {
+        Object.keys(this.meshes).map((key) => {
+          const mesh = res[key];
+          this.meshes[key].mesh = res[key];
+          this.meshes[key].buffers = this.createBuffers(
+            mesh.vertices,
+            mesh.indices,
+            mesh.indices,
+            mesh.vertexNormals
+            // Cube.vertexPositions,
+            // Cube.indices,
+            // Cube.textureCoordinates,
+            // Cube.vertexNormals
+          );
+        });
+      },
+      {}
+    );
   }
 
   loadTextures() {
     Object.keys(this.textures).map((key) => {
       const t = this.textures[key];
       const gl = this.gl;
+
+      if (!gl) {
+        console.error('WebGL not supported');
+        return null;
+      }
+
       const texture = gl.createTexture();
       gl.bindTexture(gl.TEXTURE_2D, texture);
 
@@ -178,11 +226,23 @@ class Application {
       image.src = t.path;
 
       t.texture = texture;
+      return t;
     });
   }
 
-  createBuffers(vertexPositions, indices, textureCoordinates, vertexNormals) {
+  createBuffers(
+    vertexPositions: number[],
+    indices: number[],
+    textureCoordinates: number[],
+    vertexNormals: number[]
+  ): CreateBufferResult | null {
     const gl = this.gl;
+
+    if (!gl) {
+      console.error('WebGL not supported');
+      return null;
+    }
+
     const positionBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
     gl.bufferData(
@@ -227,11 +287,17 @@ class Application {
     requestAnimationFrame(this.render.bind(this));
   }
 
-  render(now) {
+  render(now: number) {
     now *= 0.001;
     this.currentTime = now;
 
     const gl = this.gl;
+
+    if (!gl) {
+      console.error('WebGL not supported');
+      return;
+    }
+
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
     gl.clearDepth(1.0);
     gl.enable(gl.DEPTH_TEST);
@@ -247,14 +313,21 @@ class Application {
     requestAnimationFrame(this.render.bind(this));
   }
 
-  drawScene(obj) {
+  drawScene(obj: Application3DObject) {
     const { gl, attribLocations, uniformLocations, shaderProgram } = this;
 
-    const mesh = this.meshes[obj.mesh];
+    if (!gl) {
+      console.error('WebGL not supported');
+      return;
+    }
 
-    if (!mesh.buffers) return;
+    if (!attribLocations || !uniformLocations || !shaderProgram) {
+      return;
+    }
 
     const { buffers } = this.meshes[obj.mesh];
+
+    if (!buffers) return;
 
     const fieldOfView = (45 * Math.PI) / 180; // in radians
     const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
@@ -376,68 +449,4 @@ class Application {
   }
 }
 
-const { mat4 } = glMatrix;
-
-const vsSource = `
-    attribute vec4 aVertexPosition;
-    attribute vec3 aVertexNormal;
-    attribute vec2 aTextureCoord;
-
-    uniform mat4 uNormalMatrix;
-    uniform mat4 uModelViewMatrix;
-    uniform mat4 uProjectionMatrix;
-
-    varying highp vec2 vTextureCoord;
-    varying highp vec3 vLighting;
-
-    void main(void) {
-      gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
-      vTextureCoord = aTextureCoord;
-
-      // Apply lighting effect
-
-      highp vec3 ambientLight = vec3(0.3, 0.3, 0.3);
-      highp vec3 directionalLightColor = vec3(1, 1, 1);
-      highp vec3 directionalVector = normalize(vec3(0.85, 0.8, 0.75));
-
-      highp vec4 transformedNormal = uNormalMatrix * vec4(aVertexNormal, 1.0);
-
-      highp float directional = max(dot(transformedNormal.xyz, directionalVector), 0.0);
-      vLighting = ambientLight + (directionalLightColor * directional);
-    }
-`;
-
-const fsSource = `
-    varying highp vec2 vTextureCoord;
-    varying highp vec3 vLighting;
-
-    uniform sampler2D uSampler;
-
-    void main(void) {
-      highp vec4 texelColor = texture2D(uSampler, vTextureCoord);
-
-      gl_FragColor = vec4(texelColor.rgb * vLighting, texelColor.a);
-    }
-`;
-
-function loadShader(gl, type, source) {
-  const shader = gl.createShader(type);
-
-  gl.shaderSource(shader, source);
-
-  gl.compileShader(shader);
-
-  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-    alert(
-      'An error occurred compiling the shaders: ' + gl.getShaderInfoLog(shader)
-    );
-    gl.deleteShader(shader);
-    return null;
-  }
-
-  return shader;
-}
-
-function isPowerOf2(value) {
-  return (value & (value - 1)) == 0;
-}
+export default Application;

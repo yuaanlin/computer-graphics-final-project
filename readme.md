@@ -3,14 +3,17 @@
 ## Getting Start
 
 ```
-yarn
-yarn start
+# install dependencies
+yarn install
+
+# Start development in local server
+yarn dev 
 ```
 
 ## Build
 
 ```bash
 yarn build
-```
 
-Output folder is `dist`
+# Output folder is `dist`
+```

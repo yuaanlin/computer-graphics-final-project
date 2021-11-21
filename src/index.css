@@ -1,0 +1,42 @@
+@import url('https://fonts.googleapis.com/css2?family=Red+Hat+Text:wght@500&display=swap');
+
+* {
+  font-family: 'Red Hat Text', sans-serif;
+}
+
+.copyrights {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 101;
+  padding: 1rem;
+}
+
+.copyrights > p {
+  color: white;
+  margin: 0;
+}
+
+.copyrights > .authors {
+  margin-top: 12px;
+  opacity: 0.4;
+}
+
+.copyrights > .authors > p {
+  color: white;
+  margin: 0;
+  text-decoration: none;
+}
+
+.repo-link {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  z-index: 101;
+  padding: 1rem;
+}
+
+.repo-link > a {
+  color: rgb(134, 177, 255);
+  margin: 0;
+}

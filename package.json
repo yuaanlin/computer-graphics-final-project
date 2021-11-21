@@ -1,15 +1,17 @@
 {
   "name": "computer-graphics-final-project",
-  "version": "1.0.0",
-  "main": "index.js",
-  "license": "MIT",
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "serve": "vite preview"
+  },
+  "devDependencies": {
+    "typescript": "^4.3.2",
+    "vite": "^2.6.4"
+  },
   "dependencies": {
     "gl-matrix": "^3.4.3",
-    "http-server": "^14.0.0",
     "webgl-obj-loader": "^2.0.8"
-  },
-  "scripts": {
-    "start": "node_modules/http-server/bin/http-server",
-    "build": "bash build.sh"
   }
 }
