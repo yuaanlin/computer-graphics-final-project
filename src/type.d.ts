@@ -47,11 +47,3 @@ type Rotation = {
   z: number;
   w: number;
 };
-
-type Application3DObject = {
-  id: string;
-  mesh: string;
-  texture: string;
-  position: Position;
-  rotation: Rotation;
-};

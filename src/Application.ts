@@ -1,8 +1,8 @@
 import { mat4 } from 'gl-matrix';
 import { OBJ } from 'webgl-obj-loader';
+import Application3DObject from './Application3DObject';
 import { fsSource, loadShader, vsSource } from './shader';
 import {
-  Application3DObject,
   ApplicationAttributeLocations,
   ApplicationMeshesInfo,
   ApplicationTexturesInfo,
@@ -27,15 +27,7 @@ class Application {
     bunny: { path: 'assets/bunny_texture.jpg', texture: null },
   };
 
-  objects: Application3DObject[] = [
-    {
-      id: '1',
-      mesh: 'bunny',
-      texture: 'bunny',
-      position: { x: 0, y: 0, z: -10 },
-      rotation: { x: 1, y: 0, z: 1, w: 1 },
-    },
-  ];
+  objects: Application3DObject[] = [];
 
   currentTime = 0;
 
@@ -106,6 +98,10 @@ class Application {
       ),
       uSampler: this.gl.getUniformLocation(this.shaderProgram, 'uSampler'),
     };
+  }
+
+  addNewObject(newObject: Application3DObject) {
+    this.objects.push(newObject);
   }
 
   initShaderProgram(vsSource: string, fsSource: string) {
@@ -304,7 +300,9 @@ class Application {
     gl.depthFunc(gl.LEQUAL);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    this.objects[0].rotation.w += 0.01;
+    this.objects.map((obj) => {
+      if (obj.onNextTick) obj.onNextTick(1);
+    });
 
     this.objects.map((obj) => {
       this.drawScene(obj);
