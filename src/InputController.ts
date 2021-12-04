@@ -29,14 +29,14 @@ export default class InputController {
     }
 
     private handleKeyDown(e: KeyboardEvent) {
-       this._pressedKeys[e.key] = true;
+       this._pressedKeys[e.key.toLowerCase()] = true;
        this._keyDownEvent.map(kde => {
            if(e.key === kde.key) kde.event();
        })
     }
 
     private handleKeyUp(e: KeyboardEvent) {
-        this._pressedKeys[e.key] = false;
+        this._pressedKeys[e.key.toLowerCase()] = false;
         this._keyUpEvent.map(kue => {
             if(e.key === kue.key) kue.event();
         })

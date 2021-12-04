@@ -11,25 +11,32 @@ function main() {
   const obj = new Application3DObject('bunny', 'bunny');
 
   const {player, inputController} = app;
+
   player.onNextTick = (deltaTime) => {
-    if(inputController.isKeyPressed('w')) {
+
+    // When press "W" key, player move forward
+    if(inputController.isKeyPressed('w'))
       player.setPosition({z: player.positionZ + (deltaTime * player.moveSpeed)})
-    }
-    if(inputController.isKeyPressed('s')) {
+
+    // When press "S" key, player move forward
+    if(inputController.isKeyPressed('s'))
       player.setPosition({z: player.positionZ - (deltaTime * player.moveSpeed)})
-    }
-    if(inputController.isKeyPressed('a')) {
+
+    // When press "A" key, player move forward
+    if(inputController.isKeyPressed('a'))
       player.setPosition({x: player.positionX + (deltaTime * player.moveSpeed)})
-    }
-    if(inputController.isKeyPressed('d')) {
+
+    // When press "D" key, player move forward
+    if(inputController.isKeyPressed('d'))
       player.setPosition({x: player.positionX - (deltaTime * player.moveSpeed)})
-    }
-    if(inputController.isKeyPressed('q')) {
+
+    // for debug camera rotation without mose input
+    if(inputController.isKeyPressed('q'))
       player.setRotation({w: player.rotationRadius - .01})
-    }
-    if(inputController.isKeyPressed('e')) {
+
+    // for debug camera rotation without mose input
+    if(inputController.isKeyPressed('e'))
       player.setRotation({w: player.rotationRadius + .01})
-    }
   }
 
   app.addNewObject(obj);
