@@ -1,6 +1,7 @@
-import { mat4 } from 'gl-matrix';
+import {mat4} from 'gl-matrix';
 import { OBJ } from 'webgl-obj-loader';
 import Application3DObject from './Application3DObject';
+import InputController from './InputController';
 import { fsSource, loadShader, vsSource } from './shader';
 import {
   ApplicationAttributeLocations,
@@ -10,28 +11,28 @@ import {
   CreateBufferResult,
 } from './type';
 import { isPowerOf2 } from './utils';
+import Player from "./Player";
 
 class Application {
-  gl: WebGL2RenderingContext | null = null;
-  shaderProgram: WebGLProgram | null = null;
 
-  attribLocations: ApplicationAttributeLocations | null = null;
-
-  uniformLocations: ApplicationUniformLocations | null = null;
-
-  meshes: ApplicationMeshesInfo = {
+  private readonly _player: Player;
+  private readonly _inputController: InputController;
+  private readonly gl: WebGL2RenderingContext | null = null;
+  private readonly shaderProgram: WebGLProgram | null = null;
+  private attribLocations: ApplicationAttributeLocations | null = null;
+  private uniformLocations: ApplicationUniformLocations | null = null;
+  private meshes: ApplicationMeshesInfo = {
     bunny: { path: 'assets/bunny.obj', mesh: null, buffers: null },
   };
-
-  textures: ApplicationTexturesInfo = {
+  private textures: ApplicationTexturesInfo = {
     bunny: { path: 'assets/bunny_texture.jpg', texture: null },
   };
-
-  objects: Application3DObject[] = [];
-
-  currentTime = 0;
+  private objects: Application3DObject[] = [];
+  private currentTime = 0;
 
   constructor() {
+    this._inputController = new InputController();
+    this._player = new Player();
     const canvas = document.createElement('canvas');
 
     canvas.id = 'glCanvas';
@@ -100,6 +101,14 @@ class Application {
     };
   }
 
+  get inputController(): InputController {
+    return this._inputController;
+  }
+
+  get player(): Player {
+    return this._player;
+  }
+
   addNewObject(newObject: Application3DObject) {
     this.objects.push(newObject);
   }
@@ -153,10 +162,6 @@ class Application {
             mesh.indices,
             mesh.indices,
             mesh.vertexNormals
-            // Cube.vertexPositions,
-            // Cube.indices,
-            // Cube.textureCoordinates,
-            // Cube.vertexNormals
           );
         });
       },
@@ -285,6 +290,7 @@ class Application {
 
   render(now: number) {
     now *= 0.001;
+    const deltaTime = now - this.currentTime;
     this.currentTime = now;
 
     const gl = this.gl;
@@ -300,8 +306,11 @@ class Application {
     gl.depthFunc(gl.LEQUAL);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
+    if(this._player.onNextTick)
+      this._player.onNextTick(deltaTime)
+
     this.objects.map((obj) => {
-      if (obj.onNextTick) obj.onNextTick(1);
+      if (obj.onNextTick) obj.onNextTick(deltaTime);
     });
 
     this.objects.map((obj) => {
@@ -327,13 +336,16 @@ class Application {
 
     if (!buffers) return;
 
-    const fieldOfView = (45 * Math.PI) / 180; // in radians
+    const fieldOfView = (30 * Math.PI) / 180; // in radians
     const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
     const zNear = 0.1;
-    const zFar = 100.0;
+    const zFar = 2000.0;
     const projectionMatrix = mat4.create();
 
     mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
+
+    mat4.translate(projectionMatrix, projectionMatrix, this._player.positionVec3)
+    mat4.rotate(projectionMatrix, projectionMatrix, this._player.rotationRadius, this._player.rotationAxis)
 
     const modelViewMatrix = mat4.create();
 

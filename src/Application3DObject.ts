@@ -13,7 +13,7 @@ class Application3DObject {
     this.mesh = meshName;
     this.texture = textureName;
     this.position = { x: 0, y: 0, z: -10 };
-    this.rotation = { x: 1, y: 0, z: 1, w: 1 };
+    this.rotation = { x: 0, y: 1, z: 0, w: 0 };
   }
 }
 
