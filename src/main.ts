@@ -8,8 +8,11 @@ function main() {
   const app = new Application();
   app.run();
 
+  // add a bunny to world
   const obj = new Application3DObject('bunny', 'bunny');
+  app.addNewObject(obj);
 
+  // Handling user input
   const { player, inputController } = app;
 
   player.onNextTick = (deltaTime) => {
@@ -41,5 +44,4 @@ function main() {
       player.setPosition({ x: player.positionX - (deltaTime * player.moveSpeed) })
   }
 
-  app.addNewObject(obj);
 }
