@@ -1,22 +1,22 @@
-import {mat4} from 'gl-matrix';
+import { mat4 } from 'gl-matrix';
 import { OBJ } from 'webgl-obj-loader';
 import Application3DObject from './Application3DObject';
 import InputController from './InputController';
+import Player from "./Player";
 import { fsSource, loadShader, vsSource } from './shader';
 import {
   ApplicationAttributeLocations,
   ApplicationMeshesInfo,
   ApplicationTexturesInfo,
   ApplicationUniformLocations,
-  CreateBufferResult,
+  CreateBufferResult
 } from './type';
 import { isPowerOf2 } from './utils';
-import Player from "./Player";
 
 class Application {
 
   private readonly _player: Player;
-  private readonly _inputController: InputController;
+  private readonly _inputController: InputController | null = null;
   private readonly gl: WebGL2RenderingContext | null = null;
   private readonly shaderProgram: WebGLProgram | null = null;
   private attribLocations: ApplicationAttributeLocations | null = null;
@@ -33,9 +33,11 @@ class Application {
   constructor() {
     this._inputController = new InputController();
     this._player = new Player();
-    const canvas = document.createElement('canvas');
 
-    canvas.id = 'glCanvas';
+    const canvas = document.getElementById('glCanvas') as unknown as HTMLCanvasElement;
+
+    if (!canvas) return;
+
     canvas.style.position = 'fixed';
     canvas.style.top = '0';
     canvas.style.left = '0';
@@ -44,16 +46,11 @@ class Application {
     canvas.style.zIndex = '100';
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-
-    const existingCanvas = document.getElementById(canvas.id);
-    if (existingCanvas && existingCanvas.parentElement) {
-      existingCanvas.parentElement.removeChild(existingCanvas);
-    }
+    canvas.onclick = this._inputController.requestLockPointer;
 
     if (!canvas) {
       return;
     }
-    document.body.appendChild(canvas);
 
     this.gl = canvas.getContext('webgl2');
 
@@ -101,7 +98,7 @@ class Application {
     };
   }
 
-  get inputController(): InputController {
+  get inputController(): InputController | null {
     return this._inputController;
   }
 
@@ -138,7 +135,7 @@ class Application {
     if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
       alert(
         'Unable to initialize the shader program: ' +
-          gl.getProgramInfoLog(shaderProgram)
+        gl.getProgramInfoLog(shaderProgram)
       );
       return null;
     }
@@ -306,7 +303,7 @@ class Application {
     gl.depthFunc(gl.LEQUAL);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    if(this._player.onNextTick)
+    if (this._player.onNextTick)
       this._player.onNextTick(deltaTime)
 
     this.objects.map((obj) => {
@@ -341,24 +338,22 @@ class Application {
     const zNear = 0.1;
     const zFar = 2000.0;
     const projectionMatrix = mat4.create();
-
     mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
-
-    mat4.translate(projectionMatrix, projectionMatrix, this._player.positionVec3)
     mat4.rotate(projectionMatrix, projectionMatrix, this._player.rotationRadius, this._player.rotationAxis)
+    mat4.translate(projectionMatrix, projectionMatrix, this._player.positionVec3)
 
     const modelViewMatrix = mat4.create();
-
-    mat4.translate(modelViewMatrix, modelViewMatrix, [
-      obj.position.x,
-      obj.position.y,
-      obj.position.z,
-    ]);
 
     mat4.rotate(modelViewMatrix, modelViewMatrix, obj.rotation.w, [
       obj.rotation.x,
       obj.rotation.y,
       obj.rotation.z,
+    ]);
+
+    mat4.translate(modelViewMatrix, modelViewMatrix, [
+      obj.position.x,
+      obj.position.y,
+      obj.position.z,
     ]);
 
     {
