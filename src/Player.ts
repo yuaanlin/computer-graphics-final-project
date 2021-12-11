@@ -1,63 +1,57 @@
-import {Position, Rotation} from "./type";
+import {EulerAngles, Position} from "./type";
 import {ReadonlyVec3} from "gl-matrix";
 
 export default class Player {
-    onNextTick: ((deltaTime: number) => void) | undefined;
-    private _position: Position;
-    private _rotation: Rotation;
+  onNextTick: ((deltaTime: number) => void) | undefined;
+  private _position: Position;
 
-    constructor() {
-        this._moveSpeed = 10;
-        this._position = {x: 0, y:0, z:0}
-        this._rotation = {x:0,y:1, z:0, w:0}
-    }
+  constructor() {
+    this._moveSpeed = 10;
+    this._position = {x: 0, y: 0, z: 0}
+    this._rotation = {pitch: 0, roll: 0, yaw: 0}
+  }
 
-    private _moveSpeed: number;
+  private _rotation: EulerAngles;
 
-    get moveSpeed(): number {
-        return this._moveSpeed;
-    }
+  get rotation(): EulerAngles {
+    return this._rotation;
+  }
 
-    set moveSpeed(value: number) {
-        this._moveSpeed = value;
-    }
+  set rotation(value: EulerAngles) {
+    this._rotation = value;
+  }
 
-    get positionVec3(): ReadonlyVec3 {
-        return [this._position.x, this._position.y, this._position.z]
-    }
+  private _moveSpeed: number;
 
-    get rotationRadius(): number {
-        return this._rotation.w;
-    }
+  get moveSpeed(): number {
+    return this._moveSpeed;
+  }
 
-    get rotationAxis(): ReadonlyVec3 {
-        return [this._rotation.x, this._rotation.y, this._rotation.z]
-    }
+  set moveSpeed(value: number) {
+    this._moveSpeed = value;
+  }
 
-    get positionX(): number {
-        return this._position.x;
-    }
+  get positionVec3(): ReadonlyVec3 {
+    return [this._position.x, this._position.y, this._position.z]
+  }
 
-    get positionY(): number {
-        return this._position.y;
-    }
+  get positionX(): number {
+    return this._position.x;
+  }
 
-    get positionZ(): number{
-        return this._position.z;
-    }
+  get positionY(): number {
+    return this._position.y;
+  }
 
-    public setRotation(rot: {x?: number, y?:number, z?:number, w?: number}) {
-        if(rot.x) this._rotation.x = rot.x;
-        if(rot.y) this._rotation.y = rot.y;
-        if(rot.z) this._rotation.z = rot.z;
-        if(rot.w) this._rotation.w = rot.w;
-    }
+  get positionZ(): number {
+    return this._position.z;
+  }
 
-    public setPosition(pos: {x?: number, y?:number, z?:number}) {
-        if(pos.x) this._position.x = pos.x;
-        if(pos.y) this._position.y = pos.y;
-        if(pos.z) this._position.z = pos.z;
-    }
+  public setPosition(pos: { x?: number, y?: number, z?: number }) {
+    if (pos.x) this._position.x = pos.x;
+    if (pos.y) this._position.y = pos.y;
+    if (pos.z) this._position.z = pos.z;
+  }
 
 }
 

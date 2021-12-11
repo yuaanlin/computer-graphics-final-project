@@ -21,8 +21,11 @@ function main() {
 
     // When mouse move, rotate the camera
     inputController.onMouseMove = (x, y) => {
-      player.setRotation({ w: player.rotationRadius + x * .001 })
-      console.log('Mouse move! delta X is ', x, ', delta Y is', y)
+      player.rotation = {
+        yaw: player.rotation.yaw,
+        pitch: player.rotation.pitch - x * .001,
+        roll: player.rotation.roll - y * .001
+      }
     }
 
     // When press "W" key, player move forward

@@ -339,7 +339,23 @@ class Application {
     const zFar = 2000.0;
     const projectionMatrix = mat4.create();
     mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
-    mat4.rotate(projectionMatrix, projectionMatrix, this._player.rotationRadius, this._player.rotationAxis)
+
+    // calculate camera rotation from this._player.rotation (euler angles representation)
+    const projectionRotateMatrix = mat4.create();
+    const x = this._player.rotation.roll;
+    const y = this._player.rotation.pitch;
+    const z = this._player.rotation.yaw;
+    const cosX = Math.cos(x), sinX = Math.sin(x),
+      cosY = Math.cos(y), sinY = Math.sin(y),
+      cosZ = Math.cos(z), sinZ = Math.sin(z);
+    mat4.set(projectionRotateMatrix,
+      cosY * cosZ, -cosX * sinZ + sinX * sinY * cosZ, sinX * sinZ + cosX * sinY * cosZ, 0,
+      cosY * sinZ, cosX * cosZ + sinX * sinY * sinZ, -sinX * cosZ + cosX * sinY * sinZ, 0,
+      -sinY, sinX * cosY, cosX * cosY, 0,
+      0, 0, 0, 1);
+    mat4.multiply(projectionMatrix, projectionMatrix, projectionRotateMatrix);
+
+    // calculate camera position from this._player.position
     mat4.translate(projectionMatrix, projectionMatrix, this._player.positionVec3)
 
     const modelViewMatrix = mat4.create();

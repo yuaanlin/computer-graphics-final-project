@@ -47,3 +47,9 @@ type Rotation = {
   z: number;
   w: number;
 };
+
+type EulerAngles = {
+  pitch: number
+  roll: number
+  yaw: number
+}
