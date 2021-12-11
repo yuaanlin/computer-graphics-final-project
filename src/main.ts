@@ -21,8 +21,6 @@ function main() {
 
     // When mouse move, rotate the camera
     inputController.onMouseMove = (x, y) => {
-      // x, y means the move distance of mouse
-      // use these params to calculate new rotation of camera!
       player.setRotation({ w: player.rotationRadius + x * .001 })
       console.log('Mouse move! delta X is ', x, ', delta Y is', y)
     }
