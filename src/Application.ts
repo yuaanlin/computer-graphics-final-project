@@ -365,7 +365,7 @@ class Application {
     requestAnimationFrame(this.render.bind(this));
   }
 
-  _drawAnimatedObject(obj: Animated3DObject) {
+  private _drawAnimatedObject(obj: Animated3DObject) {
     const { _gl, _attribLocations, _uniformLocations, _shaderProgram } = this;
 
     if (!_gl) {
