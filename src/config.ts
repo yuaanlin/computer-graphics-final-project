@@ -1,7 +1,7 @@
 export const staticMeshAssets = {
-  bunny: { path: 'assets/static_meshes/bunny.obj' },
-  cone: { path: 'assets/static_meshes/cone.obj' },
-  car: { path: 'assets/static_meshes/car.obj' }
+  minecart: { path: 'assets/static_meshes/minecart.obj' },
+  car: { path: 'assets/static_meshes/car.obj' },
+  grass: { path: 'assets/static_meshes/grass.obj' },
 };
 
 export const animatedMeshAssets = {
@@ -12,6 +12,7 @@ export const animatedMeshAssets = {
 };
 
 export const textureAssets = {
-  bunny: { path: 'assets/textures/bunny_texture.jpg' },
-  car: { path: 'assets/textures/car.png' }
+  minecart: { path: 'assets/textures/minecart.png' },
+  car: { path: 'assets/textures/car.png' },
+  grass: { path: 'assets/textures/grass.png' },
 };
