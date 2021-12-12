@@ -602,6 +602,8 @@ class Application {
       mat4.multiply(modelViewMatrix, modelViewMatrix, modelRotateMatrix);
     }
 
+    mat4.scale(modelViewMatrix, modelViewMatrix, obj.scale);
+
     {
       const numComponents = 3;
       const type = _gl.FLOAT;
