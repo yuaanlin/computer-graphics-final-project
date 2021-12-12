@@ -12,6 +12,11 @@ function main() {
   const obj = new Application3DObject('bunny', 'bunny');
   app.addNewObject(obj);
 
+  obj.onNextTick = (v) => {
+    obj.rotation.roll += v
+    obj.rotation.yaw += v
+  }
+
   // Handling user input
   const { player, inputController } = app;
 
