@@ -1,4 +1,4 @@
-import {Mesh} from 'webgl-obj-loader';
+import { Mesh } from 'webgl-obj-loader';
 
 type CreateBufferResult = {
   position: WebGLBuffer | null;
@@ -62,13 +62,6 @@ type Position = {
   x: number;
   y: number;
   z: number;
-};
-
-type Rotation = {
-  x: number;
-  y: number;
-  z: number;
-  w: number;
 };
 
 type EulerAngles = {

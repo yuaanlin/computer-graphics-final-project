@@ -1,8 +1,7 @@
 import { mat4 } from 'gl-matrix';
 import { OBJ } from 'webgl-obj-loader';
-import Application3DObject from './Application3DObject';
 import InputController from './InputController';
-import Player from './Player';
+import Player from './models/Player';
 import { fsSource, loadShader, vsSource } from './shader';
 import {
   ApplicationAnimatedMeshesInfo,
@@ -12,30 +11,32 @@ import {
   ApplicationUniformLocations,
   CreateBufferResult
 } from './type';
-import { isPowerOf2 } from './utils';
-import Animated3DObject from './Animated3DObject';
+import Animated3DObject from './models/Animated3DObject';
 import { animatedMeshAssets, staticMeshAssets, textureAssets } from './config';
+import Static3DObject from './models/Static3DObject';
+import isPowerOf2 from './utils/isPowerOf2';
 
 class Application {
 
   private readonly _player: Player;
   private readonly _inputController: InputController | null = null;
-  private readonly gl: WebGL2RenderingContext | null = null;
-  private readonly shaderProgram: WebGLProgram | null = null;
-  private attribLocations: ApplicationAttributeLocations | null = null;
-  private uniformLocations: ApplicationUniformLocations | null = null;
+  private readonly _gl: WebGL2RenderingContext | null = null;
+  private readonly _shaderProgram: WebGLProgram | null = null;
+  private _attribLocations: ApplicationAttributeLocations | null = null;
+  private _uniformLocations: ApplicationUniformLocations | null = null;
   private _staticMeshes: ApplicationMeshesInfo = staticMeshAssets;
   private _animatedMeshes: ApplicationAnimatedMeshesInfo = animatedMeshAssets;
   private _textures: ApplicationTexturesInfo = textureAssets;
-  private objects: Application3DObject[] = [];
-  private animatedObjects: Animated3DObject[] = [];
-  private currentTime = 0;
+  private _staticObjects: Static3DObject[] = [];
+  private _animatedObjects: Animated3DObject[] = [];
+  private _currentTime = 0;
 
   constructor() {
     this._inputController = new InputController();
     this._player = new Player();
 
-    const canvas = document.getElementById('glCanvas') as unknown as HTMLCanvasElement;
+    const canvas = document.getElementById(
+      'glCanvas') as unknown as HTMLCanvasElement;
 
     if (!canvas) return;
 
@@ -53,49 +54,49 @@ class Application {
       return;
     }
 
-    this.gl = canvas.getContext('webgl2');
+    this._gl = canvas.getContext('webgl2');
 
-    if (!this.gl) {
+    if (!this._gl) {
       return;
     }
 
     this.loadMeshes();
     this.loadTextures();
-    this.shaderProgram = this.initShaderProgram(vsSource, fsSource);
+    this._shaderProgram = this.initShaderProgram(vsSource, fsSource);
 
-    if (!this.shaderProgram) {
+    if (!this._shaderProgram) {
       return;
     }
 
-    this.attribLocations = {
-      vertexPosition: this.gl.getAttribLocation(
-        this.shaderProgram,
+    this._attribLocations = {
+      vertexPosition: this._gl.getAttribLocation(
+        this._shaderProgram,
         'aVertexPosition'
       ),
-      textureCoord: this.gl.getAttribLocation(
-        this.shaderProgram,
+      textureCoord: this._gl.getAttribLocation(
+        this._shaderProgram,
         'aTextureCoord'
       ),
-      vertexNormal: this.gl.getAttribLocation(
-        this.shaderProgram,
+      vertexNormal: this._gl.getAttribLocation(
+        this._shaderProgram,
         'aVertexNormal'
       ),
     };
 
-    this.uniformLocations = {
-      projectionMatrix: this.gl.getUniformLocation(
-        this.shaderProgram,
+    this._uniformLocations = {
+      projectionMatrix: this._gl.getUniformLocation(
+        this._shaderProgram,
         'uProjectionMatrix'
       ),
-      modelViewMatrix: this.gl.getUniformLocation(
-        this.shaderProgram,
+      modelViewMatrix: this._gl.getUniformLocation(
+        this._shaderProgram,
         'uModelViewMatrix'
       ),
-      normalMatrix: this.gl.getUniformLocation(
-        this.shaderProgram,
+      normalMatrix: this._gl.getUniformLocation(
+        this._shaderProgram,
         'uNormalMatrix'
       ),
-      uSampler: this.gl.getUniformLocation(this.shaderProgram, 'uSampler'),
+      uSampler: this._gl.getUniformLocation(this._shaderProgram, 'uSampler'),
     };
   }
 
@@ -107,16 +108,16 @@ class Application {
     return this._player;
   }
 
-  public addNewObject(newObject: Application3DObject) {
-    this.objects.push(newObject);
+  public addNewObject(newObject: Static3DObject) {
+    this._staticObjects.push(newObject);
   }
 
   public addNewAnimatedObject(o: Animated3DObject) {
-    this.animatedObjects.push(o);
+    this._animatedObjects.push(o);
   }
 
   initShaderProgram(vsSource: string, fsSource: string) {
-    const gl = this.gl;
+    const gl = this._gl;
 
     if (!gl) {
       console.error('WebGL not supported');
@@ -208,7 +209,7 @@ class Application {
   loadTextures() {
     Object.keys(this._textures).map((key) => {
       const t = this._textures[key];
-      const gl = this.gl;
+      const gl = this._gl;
 
       if (!gl) {
         console.error('WebGL not supported');
@@ -273,7 +274,7 @@ class Application {
     textureCoordinates: number[],
     vertexNormals: number[]
   ): CreateBufferResult | null {
-    const gl = this.gl;
+    const gl = this._gl;
 
     if (!gl) {
       console.error('WebGL not supported');
@@ -326,10 +327,10 @@ class Application {
 
   render(now: number) {
     now *= 0.001;
-    const deltaTime = now - this.currentTime;
-    this.currentTime = now;
+    const deltaTime = now - this._currentTime;
+    this._currentTime = now;
 
-    const gl = this.gl;
+    const gl = this._gl;
 
     if (!gl) {
       console.error('WebGL not supported');
@@ -345,19 +346,19 @@ class Application {
     if (this._player.onNextTick)
       this._player.onNextTick(deltaTime);
 
-    this.objects.map((obj) => {
+    this._staticObjects.map((obj) => {
       if (obj.onNextTick) obj.onNextTick(deltaTime);
     });
 
-    this.animatedObjects.map((obj) => {
+    this._animatedObjects.map((obj) => {
       if (obj.onNextTick) obj.onNextTick(deltaTime);
     });
 
-    this.objects.map((obj) => {
+    this._staticObjects.map((obj) => {
       this._drawObject(obj);
     });
 
-    this.animatedObjects.map(animatedObj => {
+    this._animatedObjects.map(animatedObj => {
       this._drawAnimatedObject(animatedObj);
     });
 
@@ -365,14 +366,14 @@ class Application {
   }
 
   _drawAnimatedObject(obj: Animated3DObject) {
-    const { gl, attribLocations, uniformLocations, shaderProgram } = this;
+    const { _gl, _attribLocations, _uniformLocations, _shaderProgram } = this;
 
-    if (!gl) {
+    if (!_gl) {
       console.error('WebGL not supported');
       return;
     }
 
-    if (!attribLocations || !uniformLocations || !shaderProgram) {
+    if (!_attribLocations || !_uniformLocations || !_shaderProgram) {
       return;
     }
 
@@ -385,7 +386,7 @@ class Application {
     if (!buffers) return;
 
     const fieldOfView = (30 * Math.PI) / 180; // in radians
-    const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
+    const aspect = _gl.canvas.clientWidth / _gl.canvas.clientHeight;
     const zNear = 0.1;
     const zFar = 2000.0;
     const projectionMatrix = mat4.create();
@@ -409,7 +410,8 @@ class Application {
     mat4.multiply(projectionMatrix, projectionMatrix, projectionRotateMatrix);
 
     // calculate camera position from this._player.position
-    mat4.translate(projectionMatrix, projectionMatrix, this._player.positionVec3);
+    mat4.translate(projectionMatrix, projectionMatrix,
+      this._player.positionVec3);
 
     const modelViewMatrix = mat4.create();
 
@@ -437,33 +439,33 @@ class Application {
 
     {
       const numComponents = 3;
-      const type = gl.FLOAT;
+      const type = _gl.FLOAT;
       const normalize = false;
       const stride = 0;
       const offset = 0;
-      gl.bindBuffer(gl.ARRAY_BUFFER, buffers.position);
-      gl.vertexAttribPointer(
-        attribLocations.vertexPosition,
+      _gl.bindBuffer(_gl.ARRAY_BUFFER, buffers.position);
+      _gl.vertexAttribPointer(
+        _attribLocations.vertexPosition,
         numComponents,
         type,
         normalize,
         stride,
         offset
       );
-      gl.enableVertexAttribArray(attribLocations.vertexPosition);
+      _gl.enableVertexAttribArray(_attribLocations.vertexPosition);
     }
 
     // Tell WebGL to use our program when drawing
-    gl.useProgram(shaderProgram);
+    _gl.useProgram(_shaderProgram);
 
     // Set the shader uniforms
-    gl.uniformMatrix4fv(
-      uniformLocations.projectionMatrix,
+    _gl.uniformMatrix4fv(
+      _uniformLocations.projectionMatrix,
       false,
       projectionMatrix
     );
-    gl.uniformMatrix4fv(
-      uniformLocations.modelViewMatrix,
+    _gl.uniformMatrix4fv(
+      _uniformLocations.modelViewMatrix,
       false,
       modelViewMatrix
     );
@@ -471,76 +473,76 @@ class Application {
     const normalMatrix = mat4.create();
     mat4.invert(normalMatrix, modelViewMatrix);
     mat4.transpose(normalMatrix, normalMatrix);
-    gl.uniformMatrix4fv(uniformLocations.normalMatrix, false, normalMatrix);
+    _gl.uniformMatrix4fv(_uniformLocations.normalMatrix, false, normalMatrix);
 
     // tell webgl how to pull out the texture coordinates from buffer
     if (meshFrame.metaData && meshFrame.metaData.textureCoord.length > 0) {
       const num = 1;
-      const type = gl.FLOAT;
+      const type = _gl.FLOAT;
       const normalize = false;
       const stride = 0;
       const offset = 0;
-      gl.bindBuffer(gl.ARRAY_BUFFER, buffers.textureCoord);
-      gl.vertexAttribPointer(
-        attribLocations.textureCoord,
+      _gl.bindBuffer(_gl.ARRAY_BUFFER, buffers.textureCoord);
+      _gl.vertexAttribPointer(
+        _attribLocations.textureCoord,
         num,
         type,
         normalize,
         stride,
         offset
       );
-      gl.enableVertexAttribArray(attribLocations.textureCoord);
+      _gl.enableVertexAttribArray(_attribLocations.textureCoord);
     }
 
     // Tell WebGL how to pull out the normals from
     // the normal buffer into the vertexNormal attribute.
     {
       const numComponents = 3;
-      const type = gl.FLOAT;
+      const type = _gl.FLOAT;
       const normalize = false;
       const stride = 0;
       const offset = 0;
-      gl.bindBuffer(gl.ARRAY_BUFFER, buffers.normal);
-      gl.vertexAttribPointer(
-        attribLocations.vertexNormal,
+      _gl.bindBuffer(_gl.ARRAY_BUFFER, buffers.normal);
+      _gl.vertexAttribPointer(
+        _attribLocations.vertexNormal,
         numComponents,
         type,
         normalize,
         stride,
         offset
       );
-      gl.enableVertexAttribArray(attribLocations.vertexNormal);
+      _gl.enableVertexAttribArray(_attribLocations.vertexNormal);
     }
 
     // Tell WebGL we want to affect texture unit 0
-    gl.activeTexture(gl.TEXTURE0);
+    _gl.activeTexture(_gl.TEXTURE0);
 
     // Bind the texture to texture unit 0
     const texture = this._textures[obj.texture].texture;
-    if (texture) gl.bindTexture(gl.TEXTURE_2D, texture);
+    if (texture) _gl.bindTexture(_gl.TEXTURE_2D, texture);
 
     // Tell the shader we bound the texture to texture unit 0
-    gl.uniform1i(uniformLocations.uSampler, 0);
+    _gl.uniform1i(_uniformLocations.uSampler, 0);
 
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.indices);
+    _gl.bindBuffer(_gl.ELEMENT_ARRAY_BUFFER, buffers.indices);
 
     {
       const indexCount = meshFrame.metaData?.indices.length || 0;
-      const type = gl.UNSIGNED_INT;
+      const type = _gl.UNSIGNED_INT;
       const offset = 0;
-      gl.drawElements(gl.TRIANGLES, indexCount, type, offset);
+      _gl.drawElements(_gl.TRIANGLES, indexCount, type, offset);
     }
   }
 
-  private _drawObject(obj: Application3DObject) {
-    const { gl, attribLocations, uniformLocations, shaderProgram } = this;
+  private _drawObject(obj: Static3DObject) {
+    const { _gl, _attribLocations, _uniformLocations, _shaderProgram } = this;
 
-    if (!gl) {
+    if (!_gl) {
       console.error('WebGL not supported');
       return;
     }
 
-    if (!attribLocations || !uniformLocations || !shaderProgram) {
+    if (!_attribLocations || !_uniformLocations || !_shaderProgram) {
       return;
     }
 
@@ -550,7 +552,7 @@ class Application {
     if (!buffers) return;
 
     const fieldOfView = (30 * Math.PI) / 180; // in radians
-    const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
+    const aspect = _gl.canvas.clientWidth / _gl.canvas.clientHeight;
     const zNear = 0.1;
     const zFar = 2000.0;
     const projectionMatrix = mat4.create();
@@ -602,33 +604,33 @@ class Application {
 
     {
       const numComponents = 3;
-      const type = gl.FLOAT;
+      const type = _gl.FLOAT;
       const normalize = false;
       const stride = 0;
       const offset = 0;
-      gl.bindBuffer(gl.ARRAY_BUFFER, buffers.position);
-      gl.vertexAttribPointer(
-        attribLocations.vertexPosition,
+      _gl.bindBuffer(_gl.ARRAY_BUFFER, buffers.position);
+      _gl.vertexAttribPointer(
+        _attribLocations.vertexPosition,
         numComponents,
         type,
         normalize,
         stride,
         offset
       );
-      gl.enableVertexAttribArray(attribLocations.vertexPosition);
+      _gl.enableVertexAttribArray(_attribLocations.vertexPosition);
     }
 
     // Tell WebGL to use our program when drawing
-    gl.useProgram(shaderProgram);
+    _gl.useProgram(_shaderProgram);
 
     // Set the shader uniforms
-    gl.uniformMatrix4fv(
-      uniformLocations.projectionMatrix,
+    _gl.uniformMatrix4fv(
+      _uniformLocations.projectionMatrix,
       false,
       projectionMatrix
     );
-    gl.uniformMatrix4fv(
-      uniformLocations.modelViewMatrix,
+    _gl.uniformMatrix4fv(
+      _uniformLocations.modelViewMatrix,
       false,
       modelViewMatrix
     );
@@ -636,64 +638,64 @@ class Application {
     const normalMatrix = mat4.create();
     mat4.invert(normalMatrix, modelViewMatrix);
     mat4.transpose(normalMatrix, normalMatrix);
-    gl.uniformMatrix4fv(uniformLocations.normalMatrix, false, normalMatrix);
+    _gl.uniformMatrix4fv(_uniformLocations.normalMatrix, false, normalMatrix);
 
     // tell webgl how to pull out the texture coordinates from buffer
     if (mesh.metaData && mesh.metaData.textureCoord.length > 0) {
       const num = 1;
-      const type = gl.FLOAT;
+      const type = _gl.FLOAT;
       const normalize = false;
       const stride = 0;
       const offset = 0;
-      gl.bindBuffer(gl.ARRAY_BUFFER, buffers.textureCoord);
-      gl.vertexAttribPointer(
-        attribLocations.textureCoord,
+      _gl.bindBuffer(_gl.ARRAY_BUFFER, buffers.textureCoord);
+      _gl.vertexAttribPointer(
+        _attribLocations.textureCoord,
         num,
         type,
         normalize,
         stride,
         offset
       );
-      gl.enableVertexAttribArray(attribLocations.textureCoord);
+      _gl.enableVertexAttribArray(_attribLocations.textureCoord);
     }
 
     // Tell WebGL how to pull out the normals from
     // the normal buffer into the vertexNormal attribute.
     {
       const numComponents = 3;
-      const type = gl.FLOAT;
+      const type = _gl.FLOAT;
       const normalize = false;
       const stride = 0;
       const offset = 0;
-      gl.bindBuffer(gl.ARRAY_BUFFER, buffers.normal);
-      gl.vertexAttribPointer(
-        attribLocations.vertexNormal,
+      _gl.bindBuffer(_gl.ARRAY_BUFFER, buffers.normal);
+      _gl.vertexAttribPointer(
+        _attribLocations.vertexNormal,
         numComponents,
         type,
         normalize,
         stride,
         offset
       );
-      gl.enableVertexAttribArray(attribLocations.vertexNormal);
+      _gl.enableVertexAttribArray(_attribLocations.vertexNormal);
     }
 
     // Tell WebGL we want to affect texture unit 0
-    gl.activeTexture(gl.TEXTURE0);
+    _gl.activeTexture(_gl.TEXTURE0);
 
     // Bind the texture to texture unit 0
     const texture = this._textures[obj.texture].texture;
-    if (texture) gl.bindTexture(gl.TEXTURE_2D, texture);
+    if (texture) _gl.bindTexture(_gl.TEXTURE_2D, texture);
 
     // Tell the shader we bound the texture to texture unit 0
-    gl.uniform1i(uniformLocations.uSampler, 0);
+    _gl.uniform1i(_uniformLocations.uSampler, 0);
 
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.indices);
+    _gl.bindBuffer(_gl.ELEMENT_ARRAY_BUFFER, buffers.indices);
 
     {
       const indexCount = this._staticMeshes[obj.mesh].metaData?.indices.length || 0;
-      const type = gl.UNSIGNED_INT;
+      const type = _gl.UNSIGNED_INT;
       const offset = 0;
-      gl.drawElements(gl.TRIANGLES, indexCount, type, offset);
+      _gl.drawElements(_gl.TRIANGLES, indexCount, type, offset);
     }
   }
 }

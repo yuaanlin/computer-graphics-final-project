@@ -1,5 +1,5 @@
-import {EulerAngles, Position} from "./type";
-import {ReadonlyVec3} from "gl-matrix";
+import { EulerAngles, Position } from '../type';
+import { ReadonlyVec3 } from 'gl-matrix';
 
 export default class Player {
   onNextTick: ((deltaTime: number) => void) | undefined;
@@ -7,8 +7,8 @@ export default class Player {
 
   constructor() {
     this._moveSpeed = 10;
-    this._position = {x: 0, y: 0, z: 0}
-    this._rotation = {pitch: 0, roll: 0, yaw: 0}
+    this._position = { x: 0, y: 0, z: 0 };
+    this._rotation = { pitch: 0, roll: 0, yaw: 0 };
   }
 
   private _rotation: EulerAngles;
@@ -32,7 +32,7 @@ export default class Player {
   }
 
   get positionVec3(): ReadonlyVec3 {
-    return [this._position.x, this._position.y, this._position.z]
+    return [this._position.x, this._position.y, this._position.z];
   }
 
   get positionX(): number {
