@@ -1,6 +1,6 @@
 import Application from './Application';
-import Application3DObject from './Application3DObject';
 import './index.css';
+import Animated3DObject from "./Animated3DObject";
 
 window.onload = main;
 
@@ -8,17 +8,21 @@ function main() {
   const app = new Application();
   app.run();
 
-  // add a bunny to world
-  const obj = new Application3DObject('bunny', 'bunny');
-  app.addNewObject(obj);
+  const a = new Animated3DObject('cone', 'bunny')
+  app.addNewAnimatedObject(a)
 
-  obj.onNextTick = (v) => {
-    obj.rotation.roll += v
-    obj.rotation.yaw += v
+  let b = 0;
+  a.onNextTick = (t) => {
+    const oldB = b;
+    b += t;
+    if (Math.round(b * 10) !== Math.round(oldB * 10)) {
+      a.animationFrame = ((a.animationFrame + 1) % 3) + 1
+    }
+    a.rotation.roll += t * 10
   }
 
   // Handling user input
-  const { player, inputController } = app;
+  const {player, inputController} = app;
 
   player.onNextTick = (deltaTime) => {
 

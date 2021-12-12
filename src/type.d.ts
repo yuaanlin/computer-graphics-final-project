@@ -1,4 +1,4 @@
-import { Mesh } from 'webgl-obj-loader';
+import {Mesh} from 'webgl-obj-loader';
 
 type CreateBufferResult = {
   position: WebGLBuffer | null;
@@ -10,15 +10,38 @@ type CreateBufferResult = {
 type ApplicationMeshesInfo = {
   [key: string]: {
     path: string;
-    mesh: Mesh | null;
-    buffers: CreateBufferResult | null;
+    mesh?: Mesh;
+    buffers?: CreateBufferResult | null;
+    metaData?: {
+      position: number[];
+      indices: number[]
+      textureCoord: number[]
+      normal: number[]
+    },
+  };
+};
+
+type ApplicationAnimatedMeshesInfo = {
+  [key: string]: {
+    path: string;
+    frames: number;
+    meshes?: {
+      mesh?: Mesh;
+      buffers?: CreateBufferResult | null;
+      metaData?: {
+        position: number[];
+        indices: number[]
+        textureCoord: number[]
+        normal: number[]
+      },
+    }[]
   };
 };
 
 type ApplicationTexturesInfo = {
   [key: string]: {
     path: string;
-    texture: WebGLTexture | null;
+    texture?: WebGLTexture | null;
   };
 };
 

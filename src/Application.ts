@@ -2,9 +2,10 @@ import { mat4 } from 'gl-matrix';
 import { OBJ } from 'webgl-obj-loader';
 import Application3DObject from './Application3DObject';
 import InputController from './InputController';
-import Player from "./Player";
+import Player from './Player';
 import { fsSource, loadShader, vsSource } from './shader';
 import {
+  ApplicationAnimatedMeshesInfo,
   ApplicationAttributeLocations,
   ApplicationMeshesInfo,
   ApplicationTexturesInfo,
@@ -12,6 +13,8 @@ import {
   CreateBufferResult
 } from './type';
 import { isPowerOf2 } from './utils';
+import Animated3DObject from './Animated3DObject';
+import { animatedMeshAssets, staticMeshAssets, textureAssets } from './config';
 
 class Application {
 
@@ -21,13 +24,11 @@ class Application {
   private readonly shaderProgram: WebGLProgram | null = null;
   private attribLocations: ApplicationAttributeLocations | null = null;
   private uniformLocations: ApplicationUniformLocations | null = null;
-  private meshes: ApplicationMeshesInfo = {
-    bunny: { path: 'assets/bunny.obj', mesh: null, buffers: null },
-  };
-  private textures: ApplicationTexturesInfo = {
-    bunny: { path: 'assets/bunny_texture.jpg', texture: null },
-  };
+  private _staticMeshes: ApplicationMeshesInfo = staticMeshAssets;
+  private _animatedMeshes: ApplicationAnimatedMeshesInfo = animatedMeshAssets;
+  private _textures: ApplicationTexturesInfo = textureAssets;
   private objects: Application3DObject[] = [];
+  private animatedObjects: Animated3DObject[] = [];
   private currentTime = 0;
 
   constructor() {
@@ -106,8 +107,12 @@ class Application {
     return this._player;
   }
 
-  addNewObject(newObject: Application3DObject) {
+  public addNewObject(newObject: Application3DObject) {
     this.objects.push(newObject);
+  }
+
+  public addNewAnimatedObject(o: Animated3DObject) {
+    this.animatedObjects.push(o);
   }
 
   initShaderProgram(vsSource: string, fsSource: string) {
@@ -145,21 +150,55 @@ class Application {
 
   loadMeshes() {
     let m: { [key: string]: string } = {};
-    Object.keys(this.meshes).map((key) => {
-      m[key] = this.meshes[key].path;
+    Object.keys(this._staticMeshes).map((key) => {
+      m[key] = this._staticMeshes[key].path;
+    });
+    Object.keys(this._animatedMeshes).map((key) => {
+      const mesh = this._animatedMeshes[key];
+      for (let i = 1; i <= mesh.frames; i++) {
+        m[key + '_' + i] = mesh.path + '/' + i + '.obj';
+      }
     });
     OBJ.downloadMeshes(
       m,
       (res) => {
-        Object.keys(this.meshes).map((key) => {
+        Object.keys(this._staticMeshes).map((key) => {
           const mesh = res[key];
-          this.meshes[key].mesh = res[key];
-          this.meshes[key].buffers = this.createBuffers(
+          this._staticMeshes[key].mesh = res[key];
+          this._staticMeshes[key].metaData = {
+            position: mesh.vertices,
+            indices: mesh.indices,
+            textureCoord: mesh.textures,
+            normal: mesh.vertexNormals
+          };
+          this._staticMeshes[key].buffers = this.createBuffers(
             mesh.vertices,
             mesh.indices,
-            mesh.indices,
+            mesh.textures,
             mesh.vertexNormals
           );
+        });
+        Object.keys(this._animatedMeshes).map((key) => {
+          const mesh = this._animatedMeshes[key];
+          for (let i = 1; i <= mesh.frames; i++) {
+            const r = res[key + '_' + i];
+            if (!mesh.meshes) mesh.meshes = [];
+            this._animatedMeshes[key]?.meshes?.push({
+              mesh: r,
+              metaData: {
+                position: r.vertices,
+                indices: r.indices,
+                textureCoord: r.textures,
+                normal: r.vertexNormals
+              },
+              buffers: this.createBuffers(
+                r.vertices,
+                r.indices,
+                r.textures,
+                r.vertexNormals
+              )
+            });
+          }
         });
       },
       {}
@@ -167,8 +206,8 @@ class Application {
   }
 
   loadTextures() {
-    Object.keys(this.textures).map((key) => {
-      const t = this.textures[key];
+    Object.keys(this._textures).map((key) => {
+      const t = this._textures[key];
       const gl = this.gl;
 
       if (!gl) {
@@ -304,20 +343,28 @@ class Application {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     if (this._player.onNextTick)
-      this._player.onNextTick(deltaTime)
+      this._player.onNextTick(deltaTime);
 
     this.objects.map((obj) => {
       if (obj.onNextTick) obj.onNextTick(deltaTime);
     });
 
+    this.animatedObjects.map((obj) => {
+      if (obj.onNextTick) obj.onNextTick(deltaTime);
+    });
+
     this.objects.map((obj) => {
-      this.drawScene(obj);
+      this._drawObject(obj);
+    });
+
+    this.animatedObjects.map(animatedObj => {
+      this._drawAnimatedObject(animatedObj);
     });
 
     requestAnimationFrame(this.render.bind(this));
   }
 
-  drawScene(obj: Application3DObject) {
+  _drawAnimatedObject(obj: Animated3DObject) {
     const { gl, attribLocations, uniformLocations, shaderProgram } = this;
 
     if (!gl) {
@@ -329,7 +376,11 @@ class Application {
       return;
     }
 
-    const { buffers } = this.meshes[obj.mesh];
+    const m = this._animatedMeshes[obj.mesh];
+    if (!m) return;
+    if (!m.meshes) return;
+    const meshFrame = m.meshes[obj.animationFrame - 1];
+    const { buffers } = meshFrame;
 
     if (!buffers) return;
 
@@ -358,7 +409,7 @@ class Application {
     mat4.multiply(projectionMatrix, projectionMatrix, projectionRotateMatrix);
 
     // calculate camera position from this._player.position
-    mat4.translate(projectionMatrix, projectionMatrix, this._player.positionVec3)
+    mat4.translate(projectionMatrix, projectionMatrix, this._player.positionVec3);
 
     const modelViewMatrix = mat4.create();
 
@@ -381,7 +432,7 @@ class Application {
         cosY * sinZ, cosX * cosZ + sinX * sinY * sinZ, -sinX * cosZ + cosX * sinY * sinZ, 0,
         -sinY, sinX * cosY, cosX * cosY, 0,
         0, 0, 0, 1);
-      mat4.multiply(modelViewMatrix, modelViewMatrix, modelRotateMatrix)
+      mat4.multiply(modelViewMatrix, modelViewMatrix, modelRotateMatrix);
     }
 
     {
@@ -423,7 +474,7 @@ class Application {
     gl.uniformMatrix4fv(uniformLocations.normalMatrix, false, normalMatrix);
 
     // tell webgl how to pull out the texture coordinates from buffer
-    {
+    if (meshFrame.metaData && meshFrame.metaData.textureCoord.length > 0) {
       const num = 1;
       const type = gl.FLOAT;
       const normalize = false;
@@ -465,8 +516,8 @@ class Application {
     gl.activeTexture(gl.TEXTURE0);
 
     // Bind the texture to texture unit 0
-    const texture = this.textures[obj.texture].texture;
-    gl.bindTexture(gl.TEXTURE_2D, texture);
+    const texture = this._textures[obj.texture].texture;
+    if (texture) gl.bindTexture(gl.TEXTURE_2D, texture);
 
     // Tell the shader we bound the texture to texture unit 0
     gl.uniform1i(uniformLocations.uSampler, 0);
@@ -474,7 +525,172 @@ class Application {
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.indices);
 
     {
-      const indexCount = 109314;
+      const indexCount = meshFrame.metaData?.indices.length || 0;
+      const type = gl.UNSIGNED_INT;
+      const offset = 0;
+      gl.drawElements(gl.TRIANGLES, indexCount, type, offset);
+    }
+  }
+
+  private _drawObject(obj: Application3DObject) {
+    const { gl, attribLocations, uniformLocations, shaderProgram } = this;
+
+    if (!gl) {
+      console.error('WebGL not supported');
+      return;
+    }
+
+    if (!attribLocations || !uniformLocations || !shaderProgram) {
+      return;
+    }
+
+    const mesh = this._staticMeshes[obj.mesh];
+    const { buffers } = mesh;
+
+    if (!buffers) return;
+
+    const fieldOfView = (30 * Math.PI) / 180; // in radians
+    const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
+    const zNear = 0.1;
+    const zFar = 2000.0;
+    const projectionMatrix = mat4.create();
+    mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
+
+    // calculate camera rotation from this._player.rotation (euler angles representation)
+    const projectionRotateMatrix = mat4.create();
+    {
+      const x = this._player.rotation.roll;
+      const y = this._player.rotation.pitch;
+      const z = this._player.rotation.yaw;
+      const cosX = Math.cos(x), sinX = Math.sin(x),
+        cosY = Math.cos(y), sinY = Math.sin(y),
+        cosZ = Math.cos(z), sinZ = Math.sin(z);
+      mat4.set(projectionRotateMatrix,
+        cosY * cosZ, -cosX * sinZ + sinX * sinY * cosZ, sinX * sinZ + cosX * sinY * cosZ, 0,
+        cosY * sinZ, cosX * cosZ + sinX * sinY * sinZ, -sinX * cosZ + cosX * sinY * sinZ, 0,
+        -sinY, sinX * cosY, cosX * cosY, 0,
+        0, 0, 0, 1);
+    }
+    mat4.multiply(projectionMatrix, projectionMatrix, projectionRotateMatrix);
+
+    // calculate camera position from this._player.position
+    mat4.translate(projectionMatrix, projectionMatrix, this._player.positionVec3);
+
+    const modelViewMatrix = mat4.create();
+
+    mat4.translate(modelViewMatrix, modelViewMatrix, [
+      obj.position.x,
+      obj.position.y,
+      obj.position.z,
+    ]);
+
+    {
+      const modelRotateMatrix = mat4.create();
+      const x = obj.rotation.roll;
+      const y = obj.rotation.pitch;
+      const z = obj.rotation.yaw;
+      const cosX = Math.cos(x), sinX = Math.sin(x),
+        cosY = Math.cos(y), sinY = Math.sin(y),
+        cosZ = Math.cos(z), sinZ = Math.sin(z);
+      mat4.set(modelRotateMatrix,
+        cosY * cosZ, -cosX * sinZ + sinX * sinY * cosZ, sinX * sinZ + cosX * sinY * cosZ, 0,
+        cosY * sinZ, cosX * cosZ + sinX * sinY * sinZ, -sinX * cosZ + cosX * sinY * sinZ, 0,
+        -sinY, sinX * cosY, cosX * cosY, 0,
+        0, 0, 0, 1);
+      mat4.multiply(modelViewMatrix, modelViewMatrix, modelRotateMatrix);
+    }
+
+    {
+      const numComponents = 3;
+      const type = gl.FLOAT;
+      const normalize = false;
+      const stride = 0;
+      const offset = 0;
+      gl.bindBuffer(gl.ARRAY_BUFFER, buffers.position);
+      gl.vertexAttribPointer(
+        attribLocations.vertexPosition,
+        numComponents,
+        type,
+        normalize,
+        stride,
+        offset
+      );
+      gl.enableVertexAttribArray(attribLocations.vertexPosition);
+    }
+
+    // Tell WebGL to use our program when drawing
+    gl.useProgram(shaderProgram);
+
+    // Set the shader uniforms
+    gl.uniformMatrix4fv(
+      uniformLocations.projectionMatrix,
+      false,
+      projectionMatrix
+    );
+    gl.uniformMatrix4fv(
+      uniformLocations.modelViewMatrix,
+      false,
+      modelViewMatrix
+    );
+
+    const normalMatrix = mat4.create();
+    mat4.invert(normalMatrix, modelViewMatrix);
+    mat4.transpose(normalMatrix, normalMatrix);
+    gl.uniformMatrix4fv(uniformLocations.normalMatrix, false, normalMatrix);
+
+    // tell webgl how to pull out the texture coordinates from buffer
+    if (mesh.metaData && mesh.metaData.textureCoord.length > 0) {
+      const num = 1;
+      const type = gl.FLOAT;
+      const normalize = false;
+      const stride = 0;
+      const offset = 0;
+      gl.bindBuffer(gl.ARRAY_BUFFER, buffers.textureCoord);
+      gl.vertexAttribPointer(
+        attribLocations.textureCoord,
+        num,
+        type,
+        normalize,
+        stride,
+        offset
+      );
+      gl.enableVertexAttribArray(attribLocations.textureCoord);
+    }
+
+    // Tell WebGL how to pull out the normals from
+    // the normal buffer into the vertexNormal attribute.
+    {
+      const numComponents = 3;
+      const type = gl.FLOAT;
+      const normalize = false;
+      const stride = 0;
+      const offset = 0;
+      gl.bindBuffer(gl.ARRAY_BUFFER, buffers.normal);
+      gl.vertexAttribPointer(
+        attribLocations.vertexNormal,
+        numComponents,
+        type,
+        normalize,
+        stride,
+        offset
+      );
+      gl.enableVertexAttribArray(attribLocations.vertexNormal);
+    }
+
+    // Tell WebGL we want to affect texture unit 0
+    gl.activeTexture(gl.TEXTURE0);
+
+    // Bind the texture to texture unit 0
+    const texture = this._textures[obj.texture].texture;
+    if (texture) gl.bindTexture(gl.TEXTURE_2D, texture);
+
+    // Tell the shader we bound the texture to texture unit 0
+    gl.uniform1i(uniformLocations.uSampler, 0);
+
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.indices);
+
+    {
+      const indexCount = this._staticMeshes[obj.mesh].metaData?.indices.length || 0;
       const type = gl.UNSIGNED_INT;
       const offset = 0;
       gl.drawElements(gl.TRIANGLES, indexCount, type, offset);
