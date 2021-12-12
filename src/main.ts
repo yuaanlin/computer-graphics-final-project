@@ -48,6 +48,20 @@ function main() {
         z: player.positionZ + Math.cos(player.rotation.pitch) * player.moveSpeed * deltaTime
       });
 
+    if (inputController.isKeyPressed(' '))
+      player.setPosition({
+        x: player.positionX,
+        y: player.positionY - .1,
+        z: player.positionZ
+      });
+
+    if (inputController.isKeyPressed('x'))
+      player.setPosition({
+        x: player.positionX,
+        y: player.positionY + .1,
+        z: player.positionZ
+      });
+
     // When press "S" key, player move backward
     if (inputController.isKeyPressed('s'))
       player.setPosition({
