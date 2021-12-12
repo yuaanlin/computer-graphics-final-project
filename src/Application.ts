@@ -644,7 +644,7 @@ class Application {
 
     // tell webgl how to pull out the texture coordinates from buffer
     if (mesh.metaData && mesh.metaData.textureCoord.length > 0) {
-      const num = 1;
+      const num = 2;
       const type = _gl.FLOAT;
       const normalize = false;
       const stride = 0;
