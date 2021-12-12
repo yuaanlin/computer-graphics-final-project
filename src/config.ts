@@ -1,6 +1,7 @@
 export const staticMeshAssets = {
   bunny: { path: 'assets/static_meshes/bunny.obj' },
   cone: { path: 'assets/static_meshes/cone.obj' },
+  car: { path: 'assets/static_meshes/car.obj' }
 };
 
 export const animatedMeshAssets = {
@@ -10,4 +11,7 @@ export const animatedMeshAssets = {
   }
 };
 
-export const textureAssets = { bunny: { path: 'assets/textures/bunny_texture.jpg' }, };
+export const textureAssets = {
+  bunny: { path: 'assets/textures/bunny_texture.jpg' },
+  car: { path: 'assets/textures/car.png' }
+};

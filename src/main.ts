@@ -1,12 +1,16 @@
 import Application from './Application';
 import './styles/index.css';
 import Animated3DObject from './models/Animated3DObject';
+import Static3DObject from './models/Static3DObject';
 
 window.onload = main;
 
 function main() {
   const app = new Application();
   app.run();
+
+  const car = new Static3DObject('car', 'car');
+  app.addNewObject(car);
 
   const a = new Animated3DObject('cone', 'bunny');
   app.addNewAnimatedObject(a);
