@@ -1,7 +1,7 @@
 import Application from './Application';
 import './styles/index.css';
-import Animated3DObject from './models/Animated3DObject';
 import Static3DObject from './models/Static3DObject';
+import static3DObject from './models/Static3DObject';
 
 window.onload = main;
 
@@ -9,21 +9,18 @@ function main() {
   const app = new Application();
   app.run();
 
-  const car = new Static3DObject('car', 'car');
-  app.addNewObject(car);
+  const minecart = new MineCart();
+  app.addNewObject(minecart);
+  minecart.position.y = 1;
 
-  const a = new Animated3DObject('cone', 'bunny');
-  app.addNewAnimatedObject(a);
-
-  let b = 0;
-  a.onNextTick = (t) => {
-    const oldB = b;
-    b += t;
-    if (Math.round(b * 10) !== Math.round(oldB * 10)) {
-      a.animationFrame = ((a.animationFrame + 1) % 3) + 1;
+  for (let i = 0; i < 30; i++) {
+    for (let j = 0; j < 30; j++) {
+      const g = new Grass();
+      g.position.x = i;
+      g.position.z = j;
+      app.addNewObject(g);
     }
-    a.rotation.roll += t * 10;
-  };
+  }
 
   // Handling user input
   const { player, inputController } = app;
@@ -84,4 +81,18 @@ function main() {
       });
   };
 
+}
+
+class Grass extends Static3DObject {
+  constructor() {
+    super('grass', 'grass');
+    this.scale = [0.5, 0.5, 0.5];
+  }
+}
+
+class MineCart extends static3DObject {
+  constructor() {
+    super('minecart', 'minecart');
+    this.scale = [1, 1, 1];
+  }
 }
