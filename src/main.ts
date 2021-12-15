@@ -33,48 +33,44 @@ function main() {
     inputController.onMouseMove = (x, y) => {
       player.rotation = {
         yaw: player.rotation.yaw,
-        pitch: player.rotation.pitch - x * .001,
+        pitch: player.rotation.pitch- x * .001,
         roll: player.rotation.roll - y * .001
       };
     };
 
-    // When press "W" key, player move forward
     if (inputController.isKeyPressed('w'))
       player.setPosition({
-        x: player.positionX + Math.sin(player.rotation.pitch) * player.moveSpeed * deltaTime,
-        z: player.positionZ + Math.cos(player.rotation.pitch) * player.moveSpeed * deltaTime
+        x: player.positionX - Math.sin(player.rotation.pitch) * player.moveSpeed * deltaTime,
+        z: player.positionZ - Math.cos(player.rotation.pitch) * player.moveSpeed * deltaTime
       });
 
     if (inputController.isKeyPressed(' '))
-      player.setPosition({
-        x: player.positionX,
-        y: player.positionY - .1,
-        z: player.positionZ
-      });
-
-    if (inputController.isKeyPressed('x'))
       player.setPosition({
         x: player.positionX,
         y: player.positionY + .1,
         z: player.positionZ
       });
 
-    // When press "S" key, player move backward
-    if (inputController.isKeyPressed('s'))
+    if (inputController.isKeyPressed('x'))
       player.setPosition({
-        x: player.positionX - Math.sin(player.rotation.pitch) * player.moveSpeed * deltaTime,
-        z: player.positionZ - Math.cos(player.rotation.pitch) * player.moveSpeed * deltaTime
+        x: player.positionX,
+        y: player.positionY - .1,
+        z: player.positionZ
       });
 
-    // When press "A" key, player move left
-    if (inputController.isKeyPressed('a'))
+    if (inputController.isKeyPressed('s'))
+      player.setPosition({
+        x: player.positionX + Math.sin(player.rotation.pitch) * player.moveSpeed * deltaTime,
+        z: player.positionZ + Math.cos(player.rotation.pitch) * player.moveSpeed * deltaTime
+      });
+
+    if (inputController.isKeyPressed('d'))
       player.setPosition({
         x: player.positionX + Math.cos(player.rotation.pitch) * player.moveSpeed * deltaTime,
         z: player.positionZ - Math.sin(player.rotation.pitch) * player.moveSpeed * deltaTime
       });
 
-    // When press "D" key, player move right
-    if (inputController.isKeyPressed('d'))
+    if (inputController.isKeyPressed('a'))
       player.setPosition({
         x: player.positionX - Math.cos(player.rotation.pitch) * player.moveSpeed * deltaTime,
         z: player.positionZ + Math.sin(player.rotation.pitch) * player.moveSpeed * deltaTime
