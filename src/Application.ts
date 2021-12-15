@@ -330,6 +330,9 @@ class Application {
     const deltaTime = now - this._currentTime;
     this._currentTime = now;
 
+    const fpsElement = document.getElementById("fps")
+    if(fpsElement) fpsElement.innerHTML = "FPS: " + Math.round(1/deltaTime);
+
     const gl = this._gl;
 
     if (!gl) {

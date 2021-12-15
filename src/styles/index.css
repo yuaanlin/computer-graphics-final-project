@@ -30,13 +30,21 @@
 
 .repo-link {
   position: absolute;
-  bottom: 0;
-  left: 0;
+  top: 0;
+  right: 0;
   z-index: 101;
   padding: 1rem;
 }
 
 .repo-link > a {
-  color: rgb(134, 177, 255);
+  color: white;
   margin: 0;
+}
+
+#fps {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  z-index: 101;
+  padding: 1rem;
 }

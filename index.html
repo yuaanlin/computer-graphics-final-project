@@ -3,8 +3,8 @@
 
 <head>
   <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="favicon.svg" rel="icon" type="image/svg+xml" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
   <title>ZJU CG Course Final Project</title>
 </head>
 
@@ -18,7 +18,7 @@
     </div>
   </div>
 
-  <canvas id="glCanvas" />
+  <canvas id="glCanvas"></canvas>
 
   <div class="repo-link">
     <a href="https://github.com/ken20001207/computer-graphics-final-project">
@@ -26,7 +26,9 @@
     </a>
   </div>
 
-  <script type="module" src="/src/main.ts"></script>
+  <div id="fps"></div>
+
+  <script src="/src/main.ts" type="module"></script>
 </body>
 
 </html>
