@@ -11,7 +11,7 @@ export const vsSource = `
       gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
       vTextureCoord = aTextureCoord;
       // Apply lighting effect
-      highp vec3 ambientLight = vec3(0.3, 0.3, 0.3);
+      highp vec3 ambientLight = vec3(0.5, 0.5, 0.5);
       highp vec3 directionalLightColor = vec3(1, 1, 1);
       highp vec3 directionalVector = normalize(vec3(0.85, 0.8, 0.75));
       highp vec4 transformedNormal = uNormalMatrix * vec4(aVertexNormal, 1.0);
