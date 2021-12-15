@@ -11,7 +11,8 @@ function main() {
 
   const minecart = new MineCart();
   app.addNewObject(minecart);
-  minecart.position.y = 1;
+  minecart.position.x = 5;
+  minecart.position.z = 5;
 
   const meadow = new Meadow();
   app.addNewObject(meadow);
