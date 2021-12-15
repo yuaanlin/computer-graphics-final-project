@@ -1,5 +1,5 @@
 import { EulerAngles, Position } from '../type';
-import { ReadonlyVec3 } from 'gl-matrix';
+import {mat4, ReadonlyVec3} from 'gl-matrix';
 
 export default class Player {
   onNextTick: ((deltaTime: number) => void) | undefined;
@@ -51,6 +51,45 @@ export default class Player {
     if (pos.x) this._position.x = pos.x;
     if (pos.y) this._position.y = pos.y;
     if (pos.z) this._position.z = pos.z;
+  }
+
+  public getProjectionMatrix(_gl: WebGL2RenderingContext) {
+    const fieldOfView = (30 * Math.PI) / 180; // in radians
+    const aspect = _gl.canvas.clientWidth / _gl.canvas.clientHeight;
+    const zNear = 0.1;
+    const zFar = 2000.0;
+    const projectionMatrix = mat4.create();
+    mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
+
+    const m = mat4.create();
+
+    // calculate camera position from this._player.position
+    mat4.translate(m, m, this.positionVec3);
+
+    // calculate camera rotation from this._player.rotation (euler angles representation)
+    const projectionRotateMatrix = mat4.create();
+    {
+      const x = this.rotation.roll;
+      const y = this.rotation.pitch;
+      const z = this.rotation.yaw;
+      const cosX = Math.cos(x), sinX = Math.sin(x),
+        cosY = Math.cos(y), sinY = Math.sin(y),
+        cosZ = Math.cos(z), sinZ = Math.sin(z);
+      mat4.set(projectionRotateMatrix,
+        cosY * cosZ, -cosX * sinZ + sinX * sinY * cosZ, sinX * sinZ + cosX * sinY * cosZ, 0,
+        cosY * sinZ, cosX * cosZ + sinX * sinY * sinZ, -sinX * cosZ + cosX * sinY * sinZ, 0,
+        -sinY, sinX * cosY, cosX * cosY, 0,
+        0, 0, 0, 1);
+      mat4.invert(projectionRotateMatrix, projectionRotateMatrix)
+    }
+    mat4.multiply(m, m, projectionRotateMatrix);
+
+
+    mat4.invert(m, m)
+
+    mat4.multiply(projectionMatrix, projectionMatrix, m)
+
+    return projectionMatrix;
   }
 
 }

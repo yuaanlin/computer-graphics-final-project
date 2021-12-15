@@ -350,12 +350,14 @@ class Application {
       if (obj.onNextTick) obj.onNextTick(deltaTime);
     });
 
+    const pm = this._player.getProjectionMatrix(gl);
+
     this._animatedObjects.map((obj) => {
       if (obj.onNextTick) obj.onNextTick(deltaTime);
     });
 
     this._staticObjects.map((obj) => {
-      this._drawObject(obj);
+      this._drawObject(obj, pm);
     });
 
     this._animatedObjects.map(animatedObj => {
@@ -534,7 +536,7 @@ class Application {
     }
   }
 
-  private _drawObject(obj: Static3DObject) {
+  private _drawObject(obj: Static3DObject, projectionMatrix: mat4) {
     const { _gl, _attribLocations, _uniformLocations, _shaderProgram } = this;
 
     if (!_gl) {
@@ -550,41 +552,6 @@ class Application {
     const { buffers } = mesh;
 
     if (!buffers) return;
-
-    const fieldOfView = (30 * Math.PI) / 180; // in radians
-    const aspect = _gl.canvas.clientWidth / _gl.canvas.clientHeight;
-    const zNear = 0.1;
-    const zFar = 2000.0;
-    const projectionMatrix = mat4.create();
-    mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
-
-    const m = mat4.create();
-
-    // calculate camera position from this._player.position
-    mat4.translate(m, m, this._player.positionVec3);
-
-    // calculate camera rotation from this._player.rotation (euler angles representation)
-    const projectionRotateMatrix = mat4.create();
-    {
-      const x = this._player.rotation.roll;
-      const y = this._player.rotation.pitch;
-      const z = this._player.rotation.yaw;
-      const cosX = Math.cos(x), sinX = Math.sin(x),
-        cosY = Math.cos(y), sinY = Math.sin(y),
-        cosZ = Math.cos(z), sinZ = Math.sin(z);
-      mat4.set(projectionRotateMatrix,
-        cosY * cosZ, -cosX * sinZ + sinX * sinY * cosZ, sinX * sinZ + cosX * sinY * cosZ, 0,
-        cosY * sinZ, cosX * cosZ + sinX * sinY * sinZ, -sinX * cosZ + cosX * sinY * sinZ, 0,
-        -sinY, sinX * cosY, cosX * cosY, 0,
-        0, 0, 0, 1);
-      mat4.invert(projectionRotateMatrix, projectionRotateMatrix)
-    }
-    mat4.multiply(m, m, projectionRotateMatrix);
-
-
-    mat4.invert(m, m)
-
-    mat4.multiply(projectionMatrix, projectionMatrix, m)
 
     const modelViewMatrix = mat4.create();
 
