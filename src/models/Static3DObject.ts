@@ -15,7 +15,7 @@ class Static3DObject {
     this.mesh = meshName;
     this.texture = textureName;
     this.scale = [1, 1, 1];
-    this.position = { x: 0, y: 0, z: -10 };
+    this.position = { x: 0, y: 0, z: 0 };
     this.rotation = { yaw: 0, pitch: 0, roll: 0 };
   }
 }
