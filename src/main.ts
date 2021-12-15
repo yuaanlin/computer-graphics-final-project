@@ -54,7 +54,7 @@ function main() {
     if (inputController.isKeyPressed('x'))
       player.setPosition({
         x: player.positionX,
-        y: player.positionY - .1,
+        y: player.positionY - .1 > 2 ? player.positionY - .1 : 2,
         z: player.positionZ
       });
 
