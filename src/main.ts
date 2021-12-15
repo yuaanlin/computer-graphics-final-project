@@ -13,14 +13,8 @@ function main() {
   app.addNewObject(minecart);
   minecart.position.y = 1;
 
-  for (let i = 0; i < 30; i++) {
-    for (let j = 0; j < 30; j++) {
-      const g = new Grass();
-      g.position.x = i;
-      g.position.z = j;
-      app.addNewObject(g);
-    }
-  }
+  const bg = new Static3DObject("bigGrass", "grass")
+  app.addNewObject(bg)
 
   const g = new Grass();
   g.position.y = 2;
