@@ -22,8 +22,14 @@ function main() {
     }
   }
 
+  const g = new Grass();
+  g.position.y = 2;
+  app.addNewObject(g);
+
   // Handling user input
   const { player, inputController } = app;
+
+  player.setPosition({x: 15, y: 3, z: 15})
 
   player.onNextTick = (deltaTime) => {
 
