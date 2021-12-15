@@ -13,11 +13,10 @@ function main() {
   app.addNewObject(minecart);
   minecart.position.y = 1;
 
-  const bg = new Static3DObject("bigGrass", "grass")
-  app.addNewObject(bg)
+  const meadow = new Meadow();
+  app.addNewObject(meadow);
 
   const g = new Grass();
-  g.position.y = 2;
   app.addNewObject(g);
 
   // Handling user input
@@ -90,5 +89,13 @@ class MineCart extends static3DObject {
   constructor() {
     super('minecart', 'minecart');
     this.scale = [1, 1, 1];
+  }
+}
+
+class Meadow extends static3DObject {
+  constructor() {
+    super("bigGrass", "grass");
+    this.position.z = -50.5;
+    this.position.x = -50.5;
   }
 }
