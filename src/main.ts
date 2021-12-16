@@ -1,7 +1,11 @@
 import Application from './Application';
 import './styles/index.css';
-import Static3DObject from './models/Static3DObject';
-import static3DObject from './models/Static3DObject';
+import {handlePlayerWalking, PlayerStateCode} from "./models/Player";
+import sendPopMessage from "./utils/sendPopMessage";
+import MineCart, {WheelDirection} from "./models/Minecart";
+import Meadow from "./models/Meadow";
+import Grass from "./models/Grass";
+import getDistance from "./utils/getDistance";
 
 window.onload = main;
 
@@ -9,94 +13,110 @@ function main() {
   const app = new Application();
   app.run();
 
-  const minecart = new MineCart();
-  app.addNewObject(minecart);
-  minecart.position.x = 5;
-  minecart.position.z = 5;
+  setTimeout(() => {
+    sendPopMessage("小提示", '使用 WASD 键移动玩家，鼠标控制视角', 5)
+  }, 1000)
 
-  const meadow = new Meadow();
-  app.addNewObject(meadow);
+  prepareScene(app)
 
   const g = new Grass();
   app.addNewObject(g);
 
   // Handling user input
-  const { player, inputController } = app;
+  const {player, inputController} = app;
+  if (!player || !inputController) return;
 
-  player.setPosition({x: 15, y: 3, z: 15})
+  const minecart = new MineCart(player);
+  app.addNewObject(minecart);
+  minecart.position.x = 5;
+  minecart.position.z = -30;
+
+  player.position.x = 0
+  player.position.y = 2
+  player.position.z = 0
+
+  inputController.registerKeyDownEvent({
+    key: 'f', event: () => {
+      switch (player.state.code) {
+        case PlayerStateCode.DRIVING:
+          player.position.y = 2;
+          player.state = {
+            code: PlayerStateCode.WALKING,
+          }
+          break
+        case PlayerStateCode.WALKING:
+          player.state = {
+            code: PlayerStateCode.DRIVING,
+            vehicleId: minecart.id
+          }
+          break
+      }
+    }
+  })
 
   player.onNextTick = (deltaTime) => {
 
     if (!inputController) return;
 
-    // When mouse move, rotate the camera
-    inputController.onMouseMove = (x, y) => {
-      player.rotation = {
-        yaw: player.rotation.yaw,
-        pitch: player.rotation.pitch- x * .001,
-        roll: player.rotation.roll - y * .001
-      };
-    };
+    if (!player.hasSawVehicle && getDistance(minecart.position, player.position) < 5) {
+      player.hasSawVehicle = true;
+      sendPopMessage('你发现了一辆矿车！', '使用 F 键驾驶矿车', 5)
+    }
 
-    if (inputController.isKeyPressed('w'))
+    if (player.state.code === PlayerStateCode.WALKING) {
+      handlePlayerWalking(player, inputController, deltaTime)
+    }
+
+    if (player.state.code === PlayerStateCode.DRIVING) {
+      const vehicle = app.getObjectById(player.state.vehicleId) as unknown as MineCart;
+
+      if (!vehicle) {
+        player.state = {code: PlayerStateCode.WALKING};
+        return
+      }
+
+      if (inputController.isKeyPressed('w'))
+        vehicle.speedUp(.5);
+
+      if (inputController.isKeyPressed('s'))
+        vehicle.speedUp(-.5);
+
+      vehicle.turnAround(WheelDirection.CENTER)
+
+      if (inputController.isKeyPressed('a'))
+        vehicle.turnAround(WheelDirection.LEFT)
+
+      if (inputController.isKeyPressed('d'))
+        vehicle.turnAround(WheelDirection.RIGHT)
+
       player.setPosition({
-        x: player.positionX - Math.sin(player.rotation.pitch) * player.moveSpeed * deltaTime,
-        z: player.positionZ - Math.cos(player.rotation.pitch) * player.moveSpeed * deltaTime
-      });
-
-    if (inputController.isKeyPressed(' '))
-      player.setPosition({
-        x: player.positionX,
-        y: player.positionY + .1,
-        z: player.positionZ
-      });
-
-    if (inputController.isKeyPressed('x'))
-      player.setPosition({
-        x: player.positionX,
-        y: player.positionY - .1 > 2 ? player.positionY - .1 : 2,
-        z: player.positionZ
-      });
-
-    if (inputController.isKeyPressed('s'))
-      player.setPosition({
-        x: player.positionX + Math.sin(player.rotation.pitch) * player.moveSpeed * deltaTime,
-        z: player.positionZ + Math.cos(player.rotation.pitch) * player.moveSpeed * deltaTime
-      });
-
-    if (inputController.isKeyPressed('d'))
-      player.setPosition({
-        x: player.positionX + Math.cos(player.rotation.pitch) * player.moveSpeed * deltaTime,
-        z: player.positionZ - Math.sin(player.rotation.pitch) * player.moveSpeed * deltaTime
-      });
-
-    if (inputController.isKeyPressed('a'))
-      player.setPosition({
-        x: player.positionX - Math.cos(player.rotation.pitch) * player.moveSpeed * deltaTime,
-        z: player.positionZ + Math.sin(player.rotation.pitch) * player.moveSpeed * deltaTime
-      });
-  };
-
-}
-
-class Grass extends Static3DObject {
-  constructor() {
-    super('grass', 'grass');
-    this.scale = [0.5, 0.5, 0.5];
+        x: vehicle.position.x,
+        y: .8,
+        z: vehicle.position.z
+      })
+    }
   }
 }
 
-class MineCart extends static3DObject {
-  constructor() {
-    super('minecart', 'minecart');
-    this.scale = [1, 1, 1];
-  }
-}
+function prepareScene(app: Application) {
 
-class Meadow extends static3DObject {
-  constructor() {
-    super("bigGrass", "grass");
-    this.position.z = -50.5;
-    this.position.x = -50.5;
+  // 八个围绕场景的大型草地方块（暂时性装饰）
+  const bigGrassBlocks: Grass[] = [];
+  for (let i = 0; i < 8; i++) {
+    bigGrassBlocks.push(new Grass());
+    bigGrassBlocks[i].scale = [10, 10, 10]
+    app.addNewObject(bigGrassBlocks[i])
   }
+  bigGrassBlocks[0].position = {x: 80, y: 0, z: 0}
+  bigGrassBlocks[1].position = {x: -80, y: 0, z: 0}
+  bigGrassBlocks[2].position = {x: 0, y: 0, z: 80}
+  bigGrassBlocks[3].position = {x: 0, y: 0, z: -80}
+  bigGrassBlocks[4].position = {x: 80, y: 0, z: -80}
+  bigGrassBlocks[5].position = {x: -80, y: 0, z: 80}
+  bigGrassBlocks[6].position = {x: 80, y: 0, z: 80}
+  bigGrassBlocks[7].position = {x: -80, y: 0, z: -80}
+
+  // 大草地（场景地面）
+  const meadow = new Meadow();
+  app.addNewObject(meadow);
 }

@@ -1,14 +1,70 @@
-import { EulerAngles, Position } from '../type';
+import {EulerAngles, Position} from '../type';
 import {mat4, ReadonlyVec3} from 'gl-matrix';
+import sendPopMessage from "../utils/sendPopMessage";
+import InputController from "../InputController";
+
+export enum PlayerStateCode {
+  WALKING, DRIVING
+}
+
+export interface PlayerWalkingState {
+  code: PlayerStateCode.WALKING
+}
+
+export interface PlayerDrivingState {
+  code: PlayerStateCode.DRIVING
+  vehicleId: string
+}
+
+export type PlayerState = PlayerWalkingState | PlayerDrivingState;
 
 export default class Player {
-  onNextTick: ((deltaTime: number) => void) | undefined;
-  private _position: Position;
+  public onNextTick: ((deltaTime: number) => void) | undefined;
 
   constructor() {
+    this._hasSawVehicle = false;
     this._moveSpeed = 10;
-    this._position = { x: 0, y: 0, z: 0 };
-    this._rotation = { pitch: 0, roll: 0, yaw: 0 };
+    this._position = {x: 0, y: 0, z: 0};
+    this._rotation = {pitch: 0, roll: 0, yaw: 0};
+  }
+
+  private _position: Position;
+
+  get position(): Position {
+    return this._position;
+  }
+
+  set position(value: Position) {
+    this._position = value;
+  }
+
+  // 代表玩家是否曾经靠近过车辆，用于第一次靠近车辆时显示提示
+  private _hasSawVehicle: boolean;
+
+  get hasSawVehicle(): boolean {
+    return this._hasSawVehicle;
+  }
+
+  set hasSawVehicle(value: boolean) {
+    this._hasSawVehicle = value;
+  }
+
+  private _state: PlayerState = {code: PlayerStateCode.WALKING};
+
+  get state(): PlayerState {
+    return this._state;
+  }
+
+  set state(value: PlayerState) {
+    switch (value.code) {
+      case PlayerStateCode.WALKING:
+        sendPopMessage("切换到走路模式", '使用 WASD 键移动玩家，鼠标控制视角', 5)
+        break
+      case PlayerStateCode.DRIVING:
+        sendPopMessage("切换到驾驶模式", '使用 WD 键加减速，AD 键控制轮胎方向 ', 5)
+        break
+    }
+    this._state = value;
   }
 
   private _rotation: EulerAngles;
@@ -94,3 +150,54 @@ export default class Player {
 
 }
 
+/** 根据键盘及鼠标输入，控制玩家的位置与旋转 */
+export function handlePlayerWalking(player: Player, inputController: InputController, deltaTime: number) {
+
+  // When mouse move, rotate the camera
+  inputController.onMouseMove = (x, y) => {
+    player.rotation = {
+      yaw: player.rotation.yaw,
+      pitch: player.rotation.pitch - x * .001,
+      roll: player.rotation.roll - y * .001
+    };
+  };
+
+  if (inputController.isKeyPressed('w'))
+    player.setPosition({
+      x: player.positionX - Math.sin(player.rotation.pitch) * player.moveSpeed * deltaTime,
+      z: player.positionZ - Math.cos(player.rotation.pitch) * player.moveSpeed * deltaTime
+    });
+
+  if (inputController.isKeyPressed(' '))
+    player.setPosition({
+      x: player.positionX,
+      y: player.positionY + .1,
+      z: player.positionZ
+    });
+
+  if (inputController.isKeyPressed('x'))
+    player.setPosition({
+      x: player.positionX,
+      y: player.positionY - .1 > 2 ? player.positionY - .1 : 2,
+      z: player.positionZ
+    });
+
+  if (inputController.isKeyPressed('s'))
+    player.setPosition({
+      x: player.positionX + Math.sin(player.rotation.pitch) * player.moveSpeed * deltaTime,
+      z: player.positionZ + Math.cos(player.rotation.pitch) * player.moveSpeed * deltaTime
+    });
+
+  if (inputController.isKeyPressed('d'))
+    player.setPosition({
+      x: player.positionX + Math.cos(player.rotation.pitch) * player.moveSpeed * deltaTime,
+      z: player.positionZ - Math.sin(player.rotation.pitch) * player.moveSpeed * deltaTime
+    });
+
+  if (inputController.isKeyPressed('a'))
+    player.setPosition({
+      x: player.positionX - Math.cos(player.rotation.pitch) * player.moveSpeed * deltaTime,
+      z: player.positionZ + Math.sin(player.rotation.pitch) * player.moveSpeed * deltaTime
+    });
+
+}

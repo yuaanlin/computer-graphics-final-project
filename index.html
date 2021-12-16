@@ -2,33 +2,38 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8" />
-  <link href="favicon.svg" rel="icon" type="image/svg+xml" />
-  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-  <title>ZJU CG Course Final Project</title>
+    <meta charset="UTF-8"/>
+    <link href="favicon.svg" rel="icon" type="image/svg+xml"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>ZJU CG Course Final Project</title>
 </head>
 
 <body style="background-color: black">
-  <div class="copyrights">
+<div class="copyrights">
     <p style="font-size: 14px">ZJU 2021 Computer Graphics Course</p>
     <p style="font-size: 18px">Final Project</p>
     <div class="authors">
-      <p style="font-size: 14px">3190106167 林沅霖</p>
-      <p style="font-size: 14px">3190106122 劉哲愷</p>
+        <p style="font-size: 14px">3190106167 林沅霖</p>
+        <p style="font-size: 14px">3190106122 劉哲愷</p>
     </div>
-  </div>
+</div>
 
-  <canvas id="glCanvas"></canvas>
+<canvas id="glCanvas"></canvas>
 
-  <div class="repo-link">
+<div class="repo-link">
     <a href="https://github.com/ken20001207/computer-graphics-final-project">
-      https://github.com/ken20001207/computer-graphics-final-project
+        https://github.com/ken20001207/computer-graphics-final-project
     </a>
-  </div>
+</div>
 
-  <div id="fps"></div>
+<div id="fps"></div>
 
-  <script src="/src/main.ts" type="module"></script>
+<div class="pop-message hide" id="pop-message">
+    <p class="pop-message-title" id="pop-message-title"></p>
+    <p id="pop-message-content"></p>
+</div>
+
+<script src="/src/main.ts" type="module"></script>
 </body>
 
 </html>

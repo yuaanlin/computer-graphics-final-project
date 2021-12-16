@@ -1,8 +1,8 @@
-import { mat4 } from 'gl-matrix';
-import { OBJ } from 'webgl-obj-loader';
+import {mat4} from 'gl-matrix';
+import {OBJ} from 'webgl-obj-loader';
 import InputController from './InputController';
 import Player from './models/Player';
-import { fsSource, loadShader, vsSource } from './shader';
+import {fsSource, loadShader, vsSource} from './shader';
 import {
   ApplicationAnimatedMeshesInfo,
   ApplicationAttributeLocations,
@@ -12,7 +12,7 @@ import {
   CreateBufferResult
 } from './type';
 import Animated3DObject from './models/Animated3DObject';
-import { animatedMeshAssets, staticMeshAssets, textureAssets } from './config';
+import {animatedMeshAssets, staticMeshAssets, textureAssets} from './config';
 import Static3DObject from './models/Static3DObject';
 import isPowerOf2 from './utils/isPowerOf2';
 
@@ -114,6 +114,10 @@ class Application {
 
   public addNewAnimatedObject(o: Animated3DObject) {
     this._animatedObjects.push(o);
+  }
+
+  public getObjectById(id: string) {
+    return this._staticObjects.find(o => o.id === id);
   }
 
   initShaderProgram(vsSource: string, fsSource: string) {
@@ -331,7 +335,7 @@ class Application {
     this._currentTime = now;
 
     const fpsElement = document.getElementById("fps")
-    if(fpsElement) fpsElement.innerHTML = "FPS: " + Math.round(1/deltaTime);
+    if (fpsElement) fpsElement.innerHTML = "FPS: " + Math.round(1 / deltaTime);
 
     const gl = this._gl;
 
@@ -371,7 +375,7 @@ class Application {
   }
 
   private _drawAnimatedObject(obj: Animated3DObject) {
-    const { _gl, _attribLocations, _uniformLocations, _shaderProgram } = this;
+    const {_gl, _attribLocations, _uniformLocations, _shaderProgram} = this;
 
     if (!_gl) {
       console.error('WebGL not supported');
@@ -386,7 +390,7 @@ class Application {
     if (!m) return;
     if (!m.meshes) return;
     const meshFrame = m.meshes[obj.animationFrame - 1];
-    const { buffers } = meshFrame;
+    const {buffers} = meshFrame;
 
     if (!buffers) return;
 
@@ -540,7 +544,7 @@ class Application {
   }
 
   private _drawObject(obj: Static3DObject, projectionMatrix: mat4) {
-    const { _gl, _attribLocations, _uniformLocations, _shaderProgram } = this;
+    const {_gl, _attribLocations, _uniformLocations, _shaderProgram} = this;
 
     if (!_gl) {
       console.error('WebGL not supported');
@@ -552,7 +556,7 @@ class Application {
     }
 
     const mesh = this._staticMeshes[obj.mesh];
-    const { buffers } = mesh;
+    const {buffers} = mesh;
 
     if (!buffers) return;
 
