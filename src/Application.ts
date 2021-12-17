@@ -621,6 +621,7 @@ class Application {
 
     const normalMatrix = mat4.create();
     mat4.invert(normalMatrix, modelViewMatrix);
+    mat4.scale(normalMatrix, normalMatrix, obj.scale)
     mat4.transpose(normalMatrix, normalMatrix);
     _gl.uniformMatrix4fv(_uniformLocations.normalMatrix, false, normalMatrix);
 
