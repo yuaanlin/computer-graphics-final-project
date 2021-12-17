@@ -19,3 +19,4 @@ export const textureAssets = {
 };
 
 export const VEHICLE_MAX_SPEED = 10;
+export const VEHICLE_MAX_ACCELERATION = 10;

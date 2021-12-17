@@ -1,5 +1,6 @@
 import static3DObject from "./Static3DObject";
 import Player from "./Player";
+import {VEHICLE_MAX_ACCELERATION} from "../config";
 
 export enum WheelDirection {
   CENTER, RIGHT, LEFT
@@ -28,7 +29,8 @@ class MineCart extends static3DObject {
   }
 
   public speedUp(deltaSpeed: number) {
-    this._acceleration += deltaSpeed
+    if (this._acceleration + deltaSpeed <= VEHICLE_MAX_ACCELERATION)
+      this._acceleration += deltaSpeed
   }
 
   public turnAround(d: WheelDirection) {
