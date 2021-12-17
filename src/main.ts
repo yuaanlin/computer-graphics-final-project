@@ -6,6 +6,7 @@ import MineCart, {WheelDirection} from "./models/Minecart";
 import Meadow from "./models/Meadow";
 import Grass from "./models/Grass";
 import getDistance from "./utils/getDistance";
+import Zombie from "./models/Zombie";
 
 window.onload = main;
 
@@ -21,6 +22,11 @@ function main() {
 
   const g = new Grass();
   app.addNewObject(g);
+
+  const z = new Zombie()
+  z.position.y = 1.2;
+  z.position.x = 5;
+  app.addNewObject(z)
 
   // Handling user input
   const {player, inputController} = app;
