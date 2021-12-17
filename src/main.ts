@@ -76,10 +76,10 @@ function main() {
       }
 
       if (inputController.isKeyPressed('w'))
-        vehicle.speedUp(.5);
+        vehicle.speedUp(40 * deltaTime);
 
       if (inputController.isKeyPressed('s'))
-        vehicle.speedUp(-.5);
+        vehicle.speedUp(-40 * deltaTime);
 
       vehicle.turnAround(WheelDirection.CENTER)
 
