@@ -23,16 +23,19 @@ function main() {
   const g = new Grass();
   app.addNewObject(g);
 
-  const z = new Zombie()
-  z.position.y = 1.2;
-  z.position.x = 5;
-  app.addNewObject(z)
+  setInterval(() => {
+    const z = new Zombie()
+    z.position.z = Math.random() * 100 - 50;
+    z.position.y = 1;
+    z.position.x = Math.random() * 100 - 50;
+    app.addNewObject(z)
+  }, 3000)
 
   // Handling user input
   const {player, inputController} = app;
   if (!player || !inputController) return;
 
-  const minecart = new MineCart(player);
+  const minecart = new MineCart(player, app);
   app.addNewObject(minecart);
   minecart.position.x = 5;
   minecart.position.z = -30;

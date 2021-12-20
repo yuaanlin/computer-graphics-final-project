@@ -120,6 +120,10 @@ class Application {
     return this._staticObjects.find(o => o.id === id);
   }
 
+  public getObjectsByMeshName<T>(meshName: string) {
+    return this._staticObjects.filter(t => t.mesh === meshName) as unknown as T[]
+  }
+
   initShaderProgram(vsSource: string, fsSource: string) {
     const gl = this._gl;
 
