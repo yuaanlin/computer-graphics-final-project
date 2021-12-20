@@ -7,6 +7,7 @@ class Static3DObject {
   mesh: string;
   texture: string;
   position: Position;
+  anchorPoint: Position;
   rotation: EulerAngles;
   scale: ReadonlyVec3;
   onNextTick: ((deltaTime: number) => void) | undefined;
@@ -18,6 +19,7 @@ class Static3DObject {
     this.scale = [1, 1, 1];
     this.position = {x: 0, y: 0, z: 0};
     this.rotation = {yaw: 0, pitch: 0, roll: 0};
+    this.anchorPoint = {x: 0, y: 0, z: 0};
   }
 }
 

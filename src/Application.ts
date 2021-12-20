@@ -569,6 +569,9 @@ class Application {
     ]);
 
     {
+      const mr = mat4.create();
+      const anchor = obj.anchorPoint;
+      mat4.translate(mr, mr, [anchor.x, anchor.y, anchor.z])
       const modelRotateMatrix = mat4.create();
       const x = obj.rotation.roll;
       const y = obj.rotation.pitch;
@@ -581,7 +584,10 @@ class Application {
         cosY * sinZ, cosX * cosZ + sinX * sinY * sinZ, -sinX * cosZ + cosX * sinY * sinZ, 0,
         -sinY, sinX * cosY, cosX * cosY, 0,
         0, 0, 0, 1);
+      mat4.multiply(modelViewMatrix, modelViewMatrix, mr)
       mat4.multiply(modelViewMatrix, modelViewMatrix, modelRotateMatrix);
+      mat4.invert(mr, mr)
+      mat4.multiply(modelViewMatrix, modelViewMatrix, mr)
     }
 
     mat4.scale(modelViewMatrix, modelViewMatrix, obj.scale);
