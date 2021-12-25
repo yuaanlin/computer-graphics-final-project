@@ -1,9 +1,10 @@
 import Player, {PlayerStateCode} from "./Player";
-import {VEHICLE_MAX_ACCELERATION} from "../config";
+import {GRAVITY_ACCELERATION, VEHICLE_MAX_ACCELERATION} from "../config";
 import Application from "../Application";
 import Zombie, {ZombieState} from "./Zombie";
 import HittableObject from "./HittableObject";
 import {EulerAngles} from "../type";
+import Meadow from "./Meadow";
 
 export enum WheelDirection {
   CENTER, RIGHT, LEFT
@@ -85,20 +86,32 @@ class MineCart extends HittableObject {
     if (this._player && this._player.state.code === PlayerStateCode.DRIVING)
       this._player.rotation.pitch -= deltaPitch
 
-    const hitZombie = this._app?.getObjectsByMeshName<Zombie>('zombie')
-      .find(zombie => (zombie.isHit(this) && zombie.state === ZombieState.ALIVE));
-
-    if (hitZombie) {
-      hitZombie.onHit()
-      this._moveDirection.pitch -= 3.14
-    }
-
     this.position = {
       ...this.position,
       x: this.position.x - Math.sin(this._moveDirection.pitch) * this._speed * deltaTime,
+      y: this.position.y + this._moveDirection.yaw * GRAVITY_ACCELERATION * deltaTime,
       z: this.position.z + Math.cos(this._moveDirection.pitch) * this._speed * deltaTime
     }
 
+    this._moveDirection.yaw = -3.14 / 2
+
+  }
+
+  override onHit(obj: HittableObject) {
+    super.onHit(obj);
+    if (obj instanceof Zombie && obj.state === ZombieState.ALIVE) {
+      this._speed /= 2;
+      this._acceleration = 0;
+      this.position = {
+        ...this.position,
+        x: this.position.x - Math.sin(this._moveDirection.pitch) * this._speed * 0.1,
+        z: this.position.z + Math.cos(this._moveDirection.pitch) * this._speed * 0.1
+      }
+    }
+
+    if (obj instanceof Meadow) {
+      this._moveDirection.yaw = 0;
+    }
   }
 }
 

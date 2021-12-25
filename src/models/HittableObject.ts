@@ -8,25 +8,28 @@ class HittableObject extends Static3DObject {
     super(meshName, textureName, app);
   }
 
-  private _xEdge = 1;
+  protected _xEdge = 1;
 
   get xEdge(): number {
     return this._xEdge;
   }
 
-  private _yEdge = 1;
+  protected _yEdge = 1;
 
   get yEdge(): number {
     return this._yEdge;
   }
 
-  private _zEdge = 1;
+  protected _zEdge = 1;
 
   get zEdge(): number {
     return this._zEdge;
   }
 
-  public isHit(obj: HittableObject) {
+  public onHit(_obj: HittableObject) {
+  }
+
+  public isHit(obj: HittableObject): boolean {
     const xRange1: ReadonlyVec2 = [obj.position.x - obj._xEdge, obj.position.x + obj.xEdge];
     const xRange2: ReadonlyVec2 = [this.position.x - this._xEdge, this.position.x + this.xEdge];
     if (!isRangeCovered(xRange1, xRange2)) return false
@@ -36,7 +39,6 @@ class HittableObject extends Static3DObject {
     const zRange1: ReadonlyVec2 = [obj.position.z - obj._zEdge, obj.position.z + obj.zEdge];
     const zRange2: ReadonlyVec2 = [this.position.z - this._zEdge, this.position.z + this.zEdge];
     return isRangeCovered(zRange1, zRange2);
-
   }
 }
 

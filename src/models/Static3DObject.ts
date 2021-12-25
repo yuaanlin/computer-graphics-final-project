@@ -52,6 +52,10 @@ class Static3DObject {
   }
 
   public multiplyTranslateMatrix(modelViewMatrix: mat4) {
+    const mr = mat4.create();
+    const anchor = this.anchorPoint;
+    mat4.translate(mr, mr, [anchor.x, anchor.y, anchor.z])
+    mat4.multiply(modelViewMatrix, modelViewMatrix, mr)
     mat4.translate(modelViewMatrix, modelViewMatrix, [
       this.position.x,
       this.position.y,

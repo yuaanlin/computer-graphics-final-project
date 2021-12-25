@@ -6,12 +6,14 @@ import MineCart, {WheelDirection} from "./models/Minecart";
 import Meadow from "./models/Meadow";
 import Grass from "./models/Grass";
 import getDistance from "./utils/getDistance";
-import Zombie from "./models/Zombie";
 import Animated3DObject from "./models/Animated3DObject";
+import Zombie from "./models/Zombie";
 
 window.onload = main;
 
 function main() {
+  let isGameEnded = false;
+
   const app = new Application();
   app.run();
 
@@ -21,13 +23,10 @@ function main() {
 
   prepareScene(app)
 
-  const g = new Grass(app);
-  app.addNewObject(g);
-
   setInterval(() => {
     const z = new Zombie(app)
     z.position.z = Math.random() * 100 - 50;
-    z.position.y = 1;
+    z.position.y = 2;
     z.position.x = Math.random() * 100 - 50;
     app.addNewObject(z)
   }, 3000)
@@ -80,6 +79,14 @@ function main() {
 
     if (!inputController) return;
 
+    if (player.position.y < -10 && !isGameEnded) {
+      isGameEnded = true;
+      if (confirm('游戏结束！你总共杀死了 ' + app.killedZombieCount + '只僵尸, 要再挑战一次吗？')) {
+        window.location.reload()
+      }
+      return;
+    }
+
     if (!player.hasSawVehicle && getDistance(minecart.position, player.position) < 5) {
       player.hasSawVehicle = true;
       sendPopMessage('你发现了一辆矿车！', '使用 F 键驾驶矿车', 5)
@@ -113,7 +120,7 @@ function main() {
 
       player.setPosition({
         x: vehicle.position.x,
-        y: .8,
+        y: vehicle.position.y + .8,
         z: vehicle.position.z
       })
     }

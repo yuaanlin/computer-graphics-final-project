@@ -15,9 +15,9 @@ import Animated3DObject from './models/Animated3DObject';
 import {animatedMeshAssets, staticMeshAssets, textureAssets} from './config';
 import Static3DObject from './models/Static3DObject';
 import isPowerOf2 from './utils/isPowerOf2';
+import HittableObject from "./models/HittableObject";
 
 class Application {
-
   private readonly _player: Player;
   private readonly _inputController: InputController | null = null;
   private readonly _gl: WebGL2RenderingContext | null = null;
@@ -97,6 +97,16 @@ class Application {
       ),
       uSampler: this._gl.getUniformLocation(this._shaderProgram, 'uSampler'),
     };
+  }
+
+  private _killedZombieCount = 0;
+
+  get killedZombieCount(): number {
+    return this._killedZombieCount;
+  }
+
+  set killedZombieCount(value: number) {
+    this._killedZombieCount = value;
   }
 
   get inputController(): InputController | null {
@@ -366,6 +376,17 @@ class Application {
       this._drawObject(obj, pm);
     });
 
+    this._objects.map(obj1 => {
+      if (obj1 instanceof HittableObject)
+        this._objects.map(obj2 => {
+          if (obj2 instanceof HittableObject)
+            if (obj1.isHit(obj2)) {
+              obj1.onHit(obj2);
+              obj2.onHit(obj1)
+            }
+        })
+    })
+
     requestAnimationFrame(this.render.bind(this));
   }
 
@@ -446,7 +467,6 @@ class Application {
 
     // tell webgl how to pull out the texture coordinates from buffer
     if (mesh.metaData && mesh.metaData.textureCoord.length > 0) {
-      console.log(mesh)
       const num = 2;
       const type = _gl.FLOAT;
       const normalize = false;

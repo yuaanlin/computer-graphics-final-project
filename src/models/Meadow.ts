@@ -1,11 +1,13 @@
-import static3DObject from "./Static3DObject";
 import Application from "../Application";
+import HittableObject from "./HittableObject";
 
-class Meadow extends static3DObject {
+class Meadow extends HittableObject {
   constructor(app: Application) {
     super("bigGrass", "grass", app);
-    this.position.z = -50.5;
-    this.position.x = -50.5;
+    this.anchorPoint.z = -50.5;
+    this.anchorPoint.x = -50.5;
+    this._zEdge = 50;
+    this._xEdge = 50;
   }
 }
 

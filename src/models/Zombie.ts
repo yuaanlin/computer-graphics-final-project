@@ -1,6 +1,7 @@
 import HittableObject from "./HittableObject";
 import sendPopMessage from "../utils/sendPopMessage";
 import Application from "../Application";
+import Minecart from "./Minecart";
 
 export enum ZombieState {
   ALIVE, HIT, DEAD
@@ -33,9 +34,13 @@ class Zombie extends HittableObject {
     return this._state;
   }
 
-  public onHit() {
-    sendPopMessage('做得好！', '你撞死了一只僵尸，继续加油！', 3)
-    this._state = ZombieState.HIT;
+  override onHit(obj: HittableObject) {
+    if (this.state !== ZombieState.ALIVE) return;
+    if (obj instanceof Minecart) {
+      sendPopMessage('做得好！', '你撞死了一只僵尸，继续加油！', 3)
+      this._app.killedZombieCount++;
+      this._state = ZombieState.HIT;
+    }
   }
 
 }
