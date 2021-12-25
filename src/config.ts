@@ -27,4 +27,12 @@ export const textureAssets = {
 export const VEHICLE_MAX_SPEED = 10;
 export const VEHICLE_MAX_ACCELERATION = 10;
 export const GRAVITY_ACCELERATION = 9.8;
-export const STEROID_SPEED = 120
+
+/** 僵尸巨人对玩家扔出的巨型泥土块的基本速度（实际速度会再加上玩家当前杀死僵尸的数量） */
+export const STEROID_SPEED = 2;
+
+/** 杀死特定数量的僵尸后，将出现僵尸巨人对玩家扔出巨型泥土块 */
+export const STEROID_START_COUNT = 1;
+
+/** 同一只僵尸巨人扔出泥土块的冷却时间 */
+export const STEROID_INTERVAL = 8000;

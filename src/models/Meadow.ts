@@ -7,6 +7,7 @@ class Meadow extends HittableObject {
     this.anchorPoint.z = -50.5;
     this.anchorPoint.x = -50.5;
     this._zEdge = 50;
+    this._yEdge = 1;
     this._xEdge = 50;
   }
 }

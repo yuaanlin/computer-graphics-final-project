@@ -1,7 +1,7 @@
 import {EulerAngles, Position} from '../type';
 import {mat4, ReadonlyVec3} from 'gl-matrix';
-import sendPopMessage from "../utils/sendPopMessage";
 import InputController from "../InputController";
+import Application from "../Application";
 
 export enum PlayerStateCode {
   WALKING, DRIVING
@@ -20,12 +20,14 @@ export type PlayerState = PlayerWalkingState | PlayerDrivingState;
 
 export default class Player {
   public onNextTick: ((deltaTime: number) => void) | undefined;
+  private _app: Application;
 
-  constructor() {
+  constructor(app: Application) {
     this._hasSawVehicle = false;
     this._moveSpeed = 10;
     this._position = {x: 0, y: 0, z: 0};
     this._rotation = {pitch: 0, roll: 0, yaw: 0};
+    this._app = app;
   }
 
   private _position: Position;
@@ -58,10 +60,10 @@ export default class Player {
   set state(value: PlayerState) {
     switch (value.code) {
       case PlayerStateCode.WALKING:
-        sendPopMessage("切换到走路模式", '使用 WASD 键移动玩家，鼠标控制视角', 5)
+        this._app.sendPopMessage("切换到走路模式", '使用 WASD 键移动玩家，鼠标控制视角', 5)
         break
       case PlayerStateCode.DRIVING:
-        sendPopMessage("切换到驾驶模式", '使用 WD 键加减速，AD 键控制轮胎方向 ', 5)
+        this._app.sendPopMessage("切换到驾驶模式", '使用 WD 键加减速，AD 键控制轮胎方向 ', 5)
         break
     }
     this._state = value;

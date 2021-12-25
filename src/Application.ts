@@ -30,10 +30,11 @@ class Application {
   private _textures: ApplicationTexturesInfo = textureAssets;
   private _objects: Static3DObject[] = [];
   private _currentTime = 0;
+  private _displayPopMessageTime = 0;
 
   constructor() {
     this._inputController = new InputController();
-    this._player = new Player();
+    this._player = new Player(this);
 
     const canvas = document.getElementById(
       'glCanvas') as unknown as HTMLCanvasElement;
@@ -116,6 +117,25 @@ class Application {
 
   get player(): Player {
     return this._player;
+  }
+
+  public sendPopMessage(title: string, message: string, duration: number) {
+    const ele = document.getElementById("pop-message")
+    const t = document.getElementById("pop-message-title")
+    const c = document.getElementById("pop-message-content")
+
+    if (!ele || !t || !c) {
+      return
+    }
+
+    t.innerText = title;
+    c.innerText = message;
+
+    setTimeout(() => {
+      ele.className = 'pop-message'
+    }, 10)
+
+    this._displayPopMessageTime = duration * 1000;
   }
 
   public addNewObject(newObject: Static3DObject) {
@@ -348,6 +368,14 @@ class Application {
     const deltaTime = now - this._currentTime;
     this._currentTime = now;
 
+    if (this._displayPopMessageTime > 0) {
+      this._displayPopMessageTime -= deltaTime * 1000;
+      if (this._displayPopMessageTime <= 0) {
+        this._displayPopMessageTime = 0;
+        this._hidePopMessage()
+      }
+    }
+
     const fpsElement = document.getElementById("fps")
     if (fpsElement) fpsElement.innerHTML = "FPS: " + Math.round(1 / deltaTime);
 
@@ -389,6 +417,20 @@ class Application {
     })
 
     requestAnimationFrame(this.render.bind(this));
+  }
+
+  public gameOver() {
+    if (confirm('游戏结束！你总共杀死了 ' + this.killedZombieCount + '只僵尸, 要再挑战一次吗？')) {
+      window.location.reload()
+    }
+  }
+
+  private _hidePopMessage() {
+    const ele = document.getElementById("pop-message")
+    if (!ele) {
+      return
+    }
+    ele.className = 'pop-message hide'
   }
 
   private _drawObject(obj: Static3DObject | Animated3DObject, projectionMatrix: mat4) {

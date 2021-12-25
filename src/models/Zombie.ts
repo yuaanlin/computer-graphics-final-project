@@ -1,7 +1,7 @@
 import HittableObject from "./HittableObject";
-import sendPopMessage from "../utils/sendPopMessage";
 import Application from "../Application";
 import Minecart from "./Minecart";
+import {STEROID_START_COUNT} from "../config";
 
 export enum ZombieState {
   ALIVE, HIT, DEAD
@@ -37,8 +37,12 @@ class Zombie extends HittableObject {
   override onHit(obj: HittableObject) {
     if (this.state !== ZombieState.ALIVE) return;
     if (obj instanceof Minecart) {
-      sendPopMessage('做得好！', '你撞死了一只僵尸，继续加油！', 3)
       this._app.killedZombieCount++;
+      if (this._app.killedZombieCount === STEROID_START_COUNT) {
+        this._app.sendPopMessage('小心点！', '附近的僵尸巨人将开始对你扔出巨大泥土块！', 3)
+      } else {
+        this._app.sendPopMessage('做得好！', '你撞死了一只僵尸，继续加油！', 3)
+      }
       this._state = ZombieState.HIT;
     }
   }

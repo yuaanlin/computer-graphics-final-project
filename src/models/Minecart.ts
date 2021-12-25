@@ -63,9 +63,6 @@ class MineCart extends HittableObject {
       this._speed += this._speed > 0 ? -5 * deltaTime : 5 * deltaTime;
       if (Math.round(100 * this._speed) === 0) {
         this._speed = 0;
-
-        // 当速度归零，将车辆移动方向与车头方向对齐
-        this._moveDirection = {...this.rotation}
       }
     }
 
