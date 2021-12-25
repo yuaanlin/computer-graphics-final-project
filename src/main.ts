@@ -124,19 +124,46 @@ function prepareScene(app: Application) {
 
   // 八个围绕场景的大型草地方块（暂时性装饰）
   const bigGrassBlocks: Grass[] = [];
+  const giantZombies: Zombie[] = [];
   for (let i = 0; i < 8; i++) {
     bigGrassBlocks.push(new Grass(app));
     bigGrassBlocks[i].scale = [10, 10, 10]
     app.addNewObject(bigGrassBlocks[i])
+    giantZombies.push(new Zombie(app))
+    giantZombies[i].scale = [1, 1, 1]
+    app.addNewObject(giantZombies[i])
   }
   bigGrassBlocks[0].position = {x: 80, y: 0, z: 0}
+  giantZombies[0].position = {x: 80, y: 30, z: 0}
+  giantZombies[0].rotation.pitch = 3.14 / 2
+
   bigGrassBlocks[1].position = {x: -80, y: 0, z: 0}
+  giantZombies[1].position = {x: -80, y: 30, z: 0}
+  giantZombies[1].rotation.pitch = -3.14 / 2
+
   bigGrassBlocks[2].position = {x: 0, y: 0, z: 80}
+  giantZombies[2].position = {x: 0, y: 30, z: 80}
+  giantZombies[2].rotation.pitch = 3.14 / 2
+
   bigGrassBlocks[3].position = {x: 0, y: 0, z: -80}
+  giantZombies[3].position = {x: 0, y: 30, z: -80}
+  giantZombies[3].rotation.pitch = -3.14 / 2
+
   bigGrassBlocks[4].position = {x: 80, y: 0, z: -80}
+  giantZombies[4].position = {x: 80, y: 30, z: -80}
+  giantZombies[4].rotation.pitch = -3.14 / 4
+
   bigGrassBlocks[5].position = {x: -80, y: 0, z: 80}
+  giantZombies[5].position = {x: -80, y: 30, z: 80}
+  giantZombies[5].rotation.pitch = -3.14 / 4
+
   bigGrassBlocks[6].position = {x: 80, y: 0, z: 80}
+  giantZombies[6].position = {x: 80, y: 30, z: 80}
+  giantZombies[6].rotation.pitch = 3.14 / 4
+
   bigGrassBlocks[7].position = {x: -80, y: 0, z: -80}
+  giantZombies[7].position = {x: -80, y: 30, z: -80}
+  giantZombies[7].rotation.pitch = -3.14 / 4
 
   // 大草地（场景地面）
   const meadow = new Meadow(app);
