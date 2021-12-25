@@ -16,6 +16,7 @@ import {animatedMeshAssets, staticMeshAssets, textureAssets} from './config';
 import Static3DObject from './models/Static3DObject';
 import isPowerOf2 from './utils/isPowerOf2';
 import HittableObject from "./models/HittableObject";
+import HittableAnimatedObject from "./models/HittableAnimatedObject";
 
 class Application {
   private readonly _player: Player;
@@ -377,9 +378,9 @@ class Application {
     });
 
     this._objects.map(obj1 => {
-      if (obj1 instanceof HittableObject)
+      if (obj1 instanceof HittableObject || obj1 instanceof HittableAnimatedObject)
         this._objects.map(obj2 => {
-          if (obj2 instanceof HittableObject)
+          if (obj2 instanceof HittableObject || obj2 instanceof HittableAnimatedObject)
             if (obj1.isHit(obj2)) {
               obj1.onHit(obj2);
               obj2.onHit(obj1)

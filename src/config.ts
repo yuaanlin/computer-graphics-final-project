@@ -10,6 +10,10 @@ export const animatedMeshAssets = {
   cone: {
     path: 'assets/animated_meshes/cone',
     frames: 4
+  },
+  steroid: {
+    path: 'assets/animated_meshes/steroid',
+    frames: 5
   }
 };
 
@@ -23,3 +27,4 @@ export const textureAssets = {
 export const VEHICLE_MAX_SPEED = 10;
 export const VEHICLE_MAX_ACCELERATION = 10;
 export const GRAVITY_ACCELERATION = 9.8;
+export const STEROID_SPEED = 120

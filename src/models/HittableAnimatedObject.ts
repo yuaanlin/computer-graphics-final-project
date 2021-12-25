@@ -1,9 +1,9 @@
-import Static3DObject from "./Static3DObject";
 import {ReadonlyVec2} from "gl-matrix";
 import Application from "../Application";
-import HittableAnimatedObject from "./HittableAnimatedObject";
+import Animated3DObject from "./Animated3DObject";
+import HittableObject from "./HittableObject";
 
-class HittableObject extends Static3DObject {
+class HittableAnimatedObject extends Animated3DObject {
 
   constructor(meshName: string, textureName: string, app: Application) {
     super(meshName, textureName, app);
@@ -47,4 +47,4 @@ function isRangeCovered(range1: ReadonlyVec2, range2: ReadonlyVec2) {
   return !(range1[0] > range2[1] || range2[0] > range1[1])
 }
 
-export default HittableObject
+export default HittableAnimatedObject

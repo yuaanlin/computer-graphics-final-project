@@ -6,8 +6,9 @@ import MineCart, {WheelDirection} from "./models/Minecart";
 import Meadow from "./models/Meadow";
 import Grass from "./models/Grass";
 import getDistance from "./utils/getDistance";
-import Animated3DObject from "./models/Animated3DObject";
 import Zombie from "./models/Zombie";
+import Steroid from "./models/Steroid";
+import getEulerAngleFromVec3 from "./utils/eulerAngleFromVec3";
 
 window.onload = main;
 
@@ -43,18 +44,6 @@ function main() {
   player.position.x = 0
   player.position.y = 2
   player.position.z = 0
-
-  const a = new Animated3DObject('cone', 'car', app);
-  app.addNewObject(a)
-  let b = 0;
-  a.onNextTick = (t) => {
-    const oldB = b;
-    b += t;
-    if (Math.round(b * 10) !== Math.round(oldB * 10)) {
-      a.animationFrame = ((a.animationFrame + 1) % 3) + 1;
-    }
-  };
-  a.position.x = 10;
 
   inputController.registerKeyDownEvent({
     key: 'f', event: () => {
@@ -171,6 +160,18 @@ function prepareScene(app: Application) {
   bigGrassBlocks[7].position = {x: -80, y: 0, z: -80}
   giantZombies[7].position = {x: -80, y: 30, z: -80}
   giantZombies[7].rotation.pitch = -3.14 / 4
+
+  giantZombies.map(gz => {
+    setInterval(() => {
+      const direction = getEulerAngleFromVec3([
+        app.player.position.x - gz.position.x,
+        app.player.position.y - gz.position.y - 50,
+        app.player.position.z - gz.position.z]);
+      const s = new Steroid(app, direction)
+      s.position = {...gz.position};
+      app.addNewObject(s)
+    }, 3000)
+  })
 
   // 大草地（场景地面）
   const meadow = new Meadow(app);
