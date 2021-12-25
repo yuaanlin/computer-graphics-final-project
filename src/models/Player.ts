@@ -63,13 +63,13 @@ export default class Player {
         this._app.sendPopMessage("切换到走路模式", '使用 WASD 键移动玩家，鼠标控制视角', 5)
         break
       case PlayerStateCode.DRIVING:
-        this._app.sendPopMessage("切换到驾驶模式", '使用 WD 键加减速，AD 键控制轮胎方向 ', 5)
+        this._app.sendPopMessage("切换到驾驶模式", '使用 WS 键加减速，AD 键控制轮胎方向 ', 5)
         break
     }
     this._state = value;
   }
 
-  private _rotation: EulerAngles;
+  private _rotation: EulerAngles
 
   get rotation(): EulerAngles {
     return this._rotation;

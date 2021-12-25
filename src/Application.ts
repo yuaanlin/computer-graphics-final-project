@@ -1,4 +1,4 @@
-import {mat4} from 'gl-matrix';
+import {mat4, vec3} from 'gl-matrix';
 import {OBJ} from 'webgl-obj-loader';
 import InputController from './InputController';
 import Player from './models/Player';
@@ -96,6 +96,10 @@ class Application {
       normalMatrix: this._gl.getUniformLocation(
         this._shaderProgram,
         'uNormalMatrix'
+      ),
+      lightDirection: this._gl.getUniformLocation(
+        this._shaderProgram,
+        'uLightDirection'
       ),
       uSampler: this._gl.getUniformLocation(this._shaderProgram, 'uSampler'),
     };
@@ -386,7 +390,8 @@ class Application {
       return;
     }
 
-    gl.clearColor(0.5, 0.6, 1, 1.0);
+    const a = Math.abs((this._currentTime % 30) / 15 - 1);
+    gl.clearColor(0.5 * a, 0.6 * a, a, 1);
     gl.clearDepth(1.0);
     gl.enable(gl.DEPTH_TEST);
     gl.depthFunc(gl.LEQUAL);
@@ -499,6 +504,13 @@ class Application {
       _uniformLocations.modelViewMatrix,
       false,
       modelViewMatrix
+    );
+
+    const a = Math.abs((this._currentTime % 30) / 15 - 1);
+    const v: vec3 = [1 - a, a, a];
+    _gl.uniform3fv(
+      _uniformLocations.lightDirection,
+      v
     );
 
     const normalMatrix = mat4.create();

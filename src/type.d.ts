@@ -1,4 +1,4 @@
-import { Mesh } from 'webgl-obj-loader';
+import {Mesh} from 'webgl-obj-loader';
 
 type CreateBufferResult = {
   position: WebGLBuffer | null;
@@ -49,6 +49,7 @@ type ApplicationUniformLocations = {
   projectionMatrix: WebGLUniformLocation | null;
   modelViewMatrix: WebGLUniformLocation | null;
   normalMatrix: WebGLUniformLocation | null;
+  lightDirection: WebGLUniformLocation | null;
   uSampler: WebGLUniformLocation | null;
 };
 
