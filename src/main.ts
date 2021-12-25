@@ -7,6 +7,7 @@ import Meadow from "./models/Meadow";
 import Grass from "./models/Grass";
 import getDistance from "./utils/getDistance";
 import Zombie from "./models/Zombie";
+import Animated3DObject from "./models/Animated3DObject";
 
 window.onload = main;
 
@@ -20,11 +21,11 @@ function main() {
 
   prepareScene(app)
 
-  const g = new Grass();
+  const g = new Grass(app);
   app.addNewObject(g);
 
   setInterval(() => {
-    const z = new Zombie()
+    const z = new Zombie(app)
     z.position.z = Math.random() * 100 - 50;
     z.position.y = 1;
     z.position.x = Math.random() * 100 - 50;
@@ -43,6 +44,18 @@ function main() {
   player.position.x = 0
   player.position.y = 2
   player.position.z = 0
+
+  const a = new Animated3DObject('cone', 'car', app);
+  app.addNewObject(a)
+  let b = 0;
+  a.onNextTick = (t) => {
+    const oldB = b;
+    b += t;
+    if (Math.round(b * 10) !== Math.round(oldB * 10)) {
+      a.animationFrame = ((a.animationFrame + 1) % 3) + 1;
+    }
+  };
+  a.position.x = 10;
 
   inputController.registerKeyDownEvent({
     key: 'f', event: () => {
@@ -112,7 +125,7 @@ function prepareScene(app: Application) {
   // 八个围绕场景的大型草地方块（暂时性装饰）
   const bigGrassBlocks: Grass[] = [];
   for (let i = 0; i < 8; i++) {
-    bigGrassBlocks.push(new Grass());
+    bigGrassBlocks.push(new Grass(app));
     bigGrassBlocks[i].scale = [10, 10, 10]
     app.addNewObject(bigGrassBlocks[i])
   }
@@ -126,6 +139,6 @@ function prepareScene(app: Application) {
   bigGrassBlocks[7].position = {x: -80, y: 0, z: -80}
 
   // 大草地（场景地面）
-  const meadow = new Meadow();
+  const meadow = new Meadow(app);
   app.addNewObject(meadow);
 }

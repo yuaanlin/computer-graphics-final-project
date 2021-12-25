@@ -1,10 +1,11 @@
 import Static3DObject from "./Static3DObject";
 import {ReadonlyVec2} from "gl-matrix";
+import Application from "../Application";
 
 class HittableObject extends Static3DObject {
 
-  constructor(meshName: string, textureName: string) {
-    super(meshName, textureName);
+  constructor(meshName: string, textureName: string, app: Application) {
+    super(meshName, textureName, app);
   }
 
   private _xEdge = 1;

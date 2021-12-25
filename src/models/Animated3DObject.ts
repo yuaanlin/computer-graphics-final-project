@@ -1,20 +1,11 @@
-import { EulerAngles, Position } from '../type';
+import Static3DObject from "./Static3DObject";
+import Application from "../Application";
 
-class Animated3DObject {
-  id: string;
-  mesh: string;
-  texture: string;
-  position: Position;
-  rotation: EulerAngles;
-  onNextTick: ((deltaTime: number) => void) | undefined;
+class Animated3DObject extends Static3DObject {
   animationFrame: number;
 
-  constructor(meshName: string, textureName: string) {
-    this.id = '';
-    this.mesh = meshName;
-    this.texture = textureName;
-    this.position = { x: 0, y: 0, z: -10 };
-    this.rotation = { pitch: 0, roll: 1, yaw: 0 };
+  constructor(meshName: string, textureName: string, app: Application) {
+    super(meshName, textureName, app);
     this.animationFrame = 1;
   }
 }

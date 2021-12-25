@@ -27,8 +27,7 @@ class Application {
   private _staticMeshes: ApplicationMeshesInfo = staticMeshAssets;
   private _animatedMeshes: ApplicationAnimatedMeshesInfo = animatedMeshAssets;
   private _textures: ApplicationTexturesInfo = textureAssets;
-  private _staticObjects: Static3DObject[] = [];
-  private _animatedObjects: Animated3DObject[] = [];
+  private _objects: Static3DObject[] = [];
   private _currentTime = 0;
 
   constructor() {
@@ -109,19 +108,19 @@ class Application {
   }
 
   public addNewObject(newObject: Static3DObject) {
-    this._staticObjects.push(newObject);
+    this._objects.push(newObject)
   }
 
-  public addNewAnimatedObject(o: Animated3DObject) {
-    this._animatedObjects.push(o);
+  public removeObject(uuid: string) {
+    this._objects = this._objects.filter(o => o.id !== uuid)
   }
 
   public getObjectById(id: string) {
-    return this._staticObjects.find(o => o.id === id);
+    return this._objects.find(o => o.id === id);
   }
 
   public getObjectsByMeshName<T>(meshName: string) {
-    return this._staticObjects.filter(t => t.mesh === meshName) as unknown as T[]
+    return this._objects.filter(t => t.mesh === meshName) as unknown as T[]
   }
 
   initShaderProgram(vsSource: string, fsSource: string) {
@@ -357,28 +356,20 @@ class Application {
     if (this._player.onNextTick)
       this._player.onNextTick(deltaTime);
 
-    this._staticObjects.map((obj) => {
-      if (obj.onNextTick) obj.onNextTick(deltaTime);
-    });
-
     const pm = this._player.getProjectionMatrix(gl);
 
-    this._animatedObjects.map((obj) => {
+    this._objects.map((obj) => {
       if (obj.onNextTick) obj.onNextTick(deltaTime);
     });
 
-    this._staticObjects.map((obj) => {
+    this._objects.map((obj) => {
       this._drawObject(obj, pm);
-    });
-
-    this._animatedObjects.map(animatedObj => {
-      this._drawAnimatedObject(animatedObj);
     });
 
     requestAnimationFrame(this.render.bind(this));
   }
 
-  private _drawAnimatedObject(obj: Animated3DObject) {
+  private _drawObject(obj: Static3DObject | Animated3DObject, projectionMatrix: mat4) {
     const {_gl, _attribLocations, _uniformLocations, _shaderProgram} = this;
 
     if (!_gl) {
@@ -390,211 +381,28 @@ class Application {
       return;
     }
 
-    const m = this._animatedMeshes[obj.mesh];
-    if (!m) return;
-    if (!m.meshes) return;
-    const meshFrame = m.meshes[obj.animationFrame - 1];
-    const {buffers} = meshFrame;
+    let mesh;
 
-    if (!buffers) return;
-
-    const fieldOfView = (30 * Math.PI) / 180; // in radians
-    const aspect = _gl.canvas.clientWidth / _gl.canvas.clientHeight;
-    const zNear = 0.1;
-    const zFar = 2000.0;
-    const projectionMatrix = mat4.create();
-    mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
-
-    // calculate camera rotation from this._player.rotation (euler angles representation)
-    const projectionRotateMatrix = mat4.create();
-    {
-      const x = this._player.rotation.roll;
-      const y = this._player.rotation.pitch;
-      const z = this._player.rotation.yaw;
-      const cosX = Math.cos(x), sinX = Math.sin(x),
-        cosY = Math.cos(y), sinY = Math.sin(y),
-        cosZ = Math.cos(z), sinZ = Math.sin(z);
-      mat4.set(projectionRotateMatrix,
-        cosY * cosZ, -cosX * sinZ + sinX * sinY * cosZ, sinX * sinZ + cosX * sinY * cosZ, 0,
-        cosY * sinZ, cosX * cosZ + sinX * sinY * sinZ, -sinX * cosZ + cosX * sinY * sinZ, 0,
-        -sinY, sinX * cosY, cosX * cosY, 0,
-        0, 0, 0, 1);
-    }
-    mat4.multiply(projectionMatrix, projectionMatrix, projectionRotateMatrix);
-
-    // calculate camera position from this._player.position
-    mat4.translate(projectionMatrix, projectionMatrix,
-      this._player.positionVec3);
-
-    const modelViewMatrix = mat4.create();
-
-    mat4.translate(modelViewMatrix, modelViewMatrix, [
-      obj.position.x,
-      obj.position.y,
-      obj.position.z,
-    ]);
-
-    {
-      const modelRotateMatrix = mat4.create();
-      const x = obj.rotation.roll;
-      const y = obj.rotation.pitch;
-      const z = obj.rotation.yaw;
-      const cosX = Math.cos(x), sinX = Math.sin(x),
-        cosY = Math.cos(y), sinY = Math.sin(y),
-        cosZ = Math.cos(z), sinZ = Math.sin(z);
-      mat4.set(modelRotateMatrix,
-        cosY * cosZ, -cosX * sinZ + sinX * sinY * cosZ, sinX * sinZ + cosX * sinY * cosZ, 0,
-        cosY * sinZ, cosX * cosZ + sinX * sinY * sinZ, -sinX * cosZ + cosX * sinY * sinZ, 0,
-        -sinY, sinX * cosY, cosX * cosY, 0,
-        0, 0, 0, 1);
-      mat4.multiply(modelViewMatrix, modelViewMatrix, modelRotateMatrix);
+    if (obj instanceof Animated3DObject) {
+      const m = this._animatedMeshes[obj.mesh];
+      if (!m) return;
+      if (!m.meshes) return;
+      mesh = m.meshes[obj.animationFrame - 1];
+    } else {
+      mesh = this._staticMeshes[obj.mesh];
     }
 
-    {
-      const numComponents = 3;
-      const type = _gl.FLOAT;
-      const normalize = false;
-      const stride = 0;
-      const offset = 0;
-      _gl.bindBuffer(_gl.ARRAY_BUFFER, buffers.position);
-      _gl.vertexAttribPointer(
-        _attribLocations.vertexPosition,
-        numComponents,
-        type,
-        normalize,
-        stride,
-        offset
-      );
-      _gl.enableVertexAttribArray(_attribLocations.vertexPosition);
-    }
+    if (!mesh) return;
 
-    // Tell WebGL to use our program when drawing
-    _gl.useProgram(_shaderProgram);
-
-    // Set the shader uniforms
-    _gl.uniformMatrix4fv(
-      _uniformLocations.projectionMatrix,
-      false,
-      projectionMatrix
-    );
-    _gl.uniformMatrix4fv(
-      _uniformLocations.modelViewMatrix,
-      false,
-      modelViewMatrix
-    );
-
-    const normalMatrix = mat4.create();
-    mat4.invert(normalMatrix, modelViewMatrix);
-    mat4.transpose(normalMatrix, normalMatrix);
-    _gl.uniformMatrix4fv(_uniformLocations.normalMatrix, false, normalMatrix);
-
-    // tell webgl how to pull out the texture coordinates from buffer
-    if (meshFrame.metaData && meshFrame.metaData.textureCoord.length > 0) {
-      const num = 2;
-      const type = _gl.FLOAT;
-      const normalize = false;
-      const stride = 0;
-      const offset = 0;
-      _gl.bindBuffer(_gl.ARRAY_BUFFER, buffers.textureCoord);
-      _gl.vertexAttribPointer(
-        _attribLocations.textureCoord,
-        num,
-        type,
-        normalize,
-        stride,
-        offset
-      );
-      _gl.enableVertexAttribArray(_attribLocations.textureCoord);
-    }
-
-    // Tell WebGL how to pull out the normals from
-    // the normal buffer into the vertexNormal attribute.
-    {
-      const numComponents = 3;
-      const type = _gl.FLOAT;
-      const normalize = false;
-      const stride = 0;
-      const offset = 0;
-      _gl.bindBuffer(_gl.ARRAY_BUFFER, buffers.normal);
-      _gl.vertexAttribPointer(
-        _attribLocations.vertexNormal,
-        numComponents,
-        type,
-        normalize,
-        stride,
-        offset
-      );
-      _gl.enableVertexAttribArray(_attribLocations.vertexNormal);
-    }
-
-    // Tell WebGL we want to affect texture unit 0
-    _gl.activeTexture(_gl.TEXTURE0);
-
-    // Bind the texture to texture unit 0
-    const texture = this._textures[obj.texture].texture;
-    if (texture) _gl.bindTexture(_gl.TEXTURE_2D, texture);
-
-    // Tell the shader we bound the texture to texture unit 0
-    _gl.uniform1i(_uniformLocations.uSampler, 0);
-
-    _gl.bindBuffer(_gl.ELEMENT_ARRAY_BUFFER, buffers.indices);
-
-    {
-      const indexCount = meshFrame.metaData?.indices.length || 0;
-      const type = _gl.UNSIGNED_INT;
-      const offset = 0;
-      _gl.drawElements(_gl.TRIANGLES, indexCount, type, offset);
-    }
-  }
-
-  private _drawObject(obj: Static3DObject, projectionMatrix: mat4) {
-    const {_gl, _attribLocations, _uniformLocations, _shaderProgram} = this;
-
-    if (!_gl) {
-      console.error('WebGL not supported');
-      return;
-    }
-
-    if (!_attribLocations || !_uniformLocations || !_shaderProgram) {
-      return;
-    }
-
-    const mesh = this._staticMeshes[obj.mesh];
     const {buffers} = mesh;
 
     if (!buffers) return;
 
+    // calculate the ModelViewMatrix from object
     const modelViewMatrix = mat4.create();
-
-    mat4.translate(modelViewMatrix, modelViewMatrix, [
-      obj.position.x,
-      obj.position.y,
-      obj.position.z,
-    ]);
-
-    {
-      const mr = mat4.create();
-      const anchor = obj.anchorPoint;
-      mat4.translate(mr, mr, [anchor.x, anchor.y, anchor.z])
-      const modelRotateMatrix = mat4.create();
-      const x = obj.rotation.roll;
-      const y = obj.rotation.pitch;
-      const z = obj.rotation.yaw;
-      const cosX = Math.cos(x), sinX = Math.sin(x),
-        cosY = Math.cos(y), sinY = Math.sin(y),
-        cosZ = Math.cos(z), sinZ = Math.sin(z);
-      mat4.set(modelRotateMatrix,
-        cosY * cosZ, -cosX * sinZ + sinX * sinY * cosZ, sinX * sinZ + cosX * sinY * cosZ, 0,
-        cosY * sinZ, cosX * cosZ + sinX * sinY * sinZ, -sinX * cosZ + cosX * sinY * sinZ, 0,
-        -sinY, sinX * cosY, cosX * cosY, 0,
-        0, 0, 0, 1);
-      mat4.multiply(modelViewMatrix, modelViewMatrix, mr)
-      mat4.multiply(modelViewMatrix, modelViewMatrix, modelRotateMatrix);
-      mat4.invert(mr, mr)
-      mat4.multiply(modelViewMatrix, modelViewMatrix, mr)
-    }
-
-    mat4.scale(modelViewMatrix, modelViewMatrix, obj.scale);
+    obj.multiplyTranslateMatrix(modelViewMatrix);
+    obj.multiplyRotationMatrix(modelViewMatrix);
+    obj.multiplyScaleMatrix(modelViewMatrix);
 
     {
       const numComponents = 3;
@@ -635,8 +443,10 @@ class Application {
     mat4.transpose(normalMatrix, normalMatrix);
     _gl.uniformMatrix4fv(_uniformLocations.normalMatrix, false, normalMatrix);
 
+
     // tell webgl how to pull out the texture coordinates from buffer
     if (mesh.metaData && mesh.metaData.textureCoord.length > 0) {
+      console.log(mesh)
       const num = 2;
       const type = _gl.FLOAT;
       const normalize = false;
@@ -679,7 +489,8 @@ class Application {
 
     // Bind the texture to texture unit 0
     const texture = this._textures[obj.texture].texture;
-    if (texture) _gl.bindTexture(_gl.TEXTURE_2D, texture);
+    if (texture && mesh.metaData && mesh.metaData.textureCoord.length > 0)
+      _gl.bindTexture(_gl.TEXTURE_2D, texture);
 
     // Tell the shader we bound the texture to texture unit 0
     _gl.uniform1i(_uniformLocations.uSampler, 0);
@@ -687,7 +498,7 @@ class Application {
     _gl.bindBuffer(_gl.ELEMENT_ARRAY_BUFFER, buffers.indices);
 
     {
-      const indexCount = this._staticMeshes[obj.mesh].metaData?.indices.length || 0;
+      const indexCount = mesh.metaData?.indices.length || 0;
       const type = _gl.UNSIGNED_INT;
       const offset = 0;
       _gl.drawElements(_gl.TRIANGLES, indexCount, type, offset);

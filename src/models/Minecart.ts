@@ -14,7 +14,6 @@ export enum WheelDirection {
  * */
 class MineCart extends HittableObject {
   private readonly _player: Player | undefined;
-  private readonly _app: Application | undefined;
   private _acceleration: number;
   private _speed: number;
 
@@ -25,7 +24,7 @@ class MineCart extends HittableObject {
   private _moveDirection: EulerAngles;
 
   constructor(player: Player, app: Application) {
-    super('minecart', 'minecart');
+    super('minecart', 'minecart', app);
     this._acceleration = 0;
     this._speed = 0;
     this._direction = 0;
@@ -39,7 +38,6 @@ class MineCart extends HittableObject {
       pitch: 3.14
     }
     this._player = player;
-    this._app = app;
   }
 
   public speedUp(deltaSpeed: number) {

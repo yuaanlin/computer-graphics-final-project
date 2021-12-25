@@ -1,13 +1,14 @@
 import HittableObject from "./HittableObject";
 import sendPopMessage from "../utils/sendPopMessage";
+import Application from "../Application";
 
 export enum ZombieState {
   ALIVE, HIT, DEAD
 }
 
 class Zombie extends HittableObject {
-  constructor() {
-    super("zombie", "zombie");
+  constructor(app: Application) {
+    super("zombie", "zombie", app);
     this.scale = [.08, .08, .08]
     this._state = ZombieState.ALIVE
     this.anchorPoint.y = -1
@@ -17,6 +18,9 @@ class Zombie extends HittableObject {
         this.rotation.yaw += 3.14 / (t * 12000)
         if (this.rotation.yaw > 3.14 / 2) {
           this._state = ZombieState.DEAD
+          setTimeout(() => {
+            this._app.removeObject(this.id)
+          }, 5000)
         }
       }
     }
