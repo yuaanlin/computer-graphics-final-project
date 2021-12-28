@@ -46,6 +46,12 @@ function main() {
   player.position.z = 0
 
   inputController.registerKeyDownEvent({
+    key: 'n', event: () => {
+      app.currentSelectLight = app.currentSelectLight === 'DAY' ? 'NIGHT' : 'DAY'
+    }
+  })
+
+  inputController.registerKeyDownEvent({
     key: 'f', event: () => {
       switch (player.state.code) {
         case PlayerStateCode.DRIVING:

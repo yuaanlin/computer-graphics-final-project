@@ -31,6 +31,7 @@ class Application {
   private _objects: Static3DObject[] = [];
   private _currentTime = 0;
   private _displayPopMessageTime = 0;
+  private _currentLight = 0;
 
   constructor() {
     this._inputController = new InputController();
@@ -105,6 +106,16 @@ class Application {
     };
   }
 
+  private _currentSelectLight: 'DAY' | 'NIGHT' = 'DAY';
+
+  get currentSelectLight(): "DAY" | "NIGHT" {
+    return this._currentSelectLight;
+  }
+
+  set currentSelectLight(value: "DAY" | "NIGHT") {
+    this._currentSelectLight = value;
+  }
+
   private _killedZombieCount = 0;
 
   get killedZombieCount(): number {
@@ -121,6 +132,14 @@ class Application {
 
   get player(): Player {
     return this._player;
+  }
+
+  private static _hidePopMessage() {
+    const ele = document.getElementById("pop-message")
+    if (!ele) {
+      return
+    }
+    ele.className = 'pop-message hide'
   }
 
   public sendPopMessage(title: string, message: string, duration: number) {
@@ -372,11 +391,19 @@ class Application {
     const deltaTime = now - this._currentTime;
     this._currentTime = now;
 
+    if (this._currentSelectLight === 'DAY' && this._currentLight < 1) {
+      this._currentLight += deltaTime;
+    }
+
+    if (this._currentSelectLight === 'NIGHT' && this._currentLight > 0) {
+      this._currentLight -= deltaTime;
+    }
+
     if (this._displayPopMessageTime > 0) {
       this._displayPopMessageTime -= deltaTime * 1000;
       if (this._displayPopMessageTime <= 0) {
         this._displayPopMessageTime = 0;
-        this._hidePopMessage()
+        Application._hidePopMessage()
       }
     }
 
@@ -390,7 +417,7 @@ class Application {
       return;
     }
 
-    const a = Math.abs((this._currentTime % 30) / 15 - 1);
+    const a = this._currentLight;
     gl.clearColor(0.5 * a, 0.6 * a, a, 1);
     gl.clearDepth(1.0);
     gl.enable(gl.DEPTH_TEST);
@@ -428,14 +455,6 @@ class Application {
     if (confirm('游戏结束！你总共杀死了 ' + this.killedZombieCount + '只僵尸, 要再挑战一次吗？')) {
       window.location.reload()
     }
-  }
-
-  private _hidePopMessage() {
-    const ele = document.getElementById("pop-message")
-    if (!ele) {
-      return
-    }
-    ele.className = 'pop-message hide'
   }
 
   private _drawObject(obj: Static3DObject | Animated3DObject, projectionMatrix: mat4) {
@@ -506,7 +525,7 @@ class Application {
       modelViewMatrix
     );
 
-    const a = Math.abs((this._currentTime % 30) / 15 - 1);
+    const a = this._currentLight
     const v: vec3 = [1 - a, a, a];
     _gl.uniform3fv(
       _uniformLocations.lightDirection,
