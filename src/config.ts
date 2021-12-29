@@ -32,7 +32,7 @@ export const GRAVITY_ACCELERATION = 9.8;
 export const STEROID_SPEED = 2;
 
 /** 杀死特定数量的僵尸后，将出现僵尸巨人对玩家扔出巨型泥土块 */
-export const STEROID_START_COUNT = 1;
+export const STEROID_START_COUNT = 3;
 
 /** 同一只僵尸巨人扔出泥土块的冷却时间 */
 export const STEROID_INTERVAL = 8000;
