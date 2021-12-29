@@ -9,9 +9,13 @@ WebGL.
 
 Try your best to kill the zombies with car, but watch out the big grass blocks thrown by giant zombie.
 
+[Online Demo 线上版本](https://zju-computer-graphics.linyuanlin.com/)
+
+[https://zju-computer-graphics.linyuanlin.com/](https://zju-computer-graphics.linyuanlin.com/)
+
 ## Getting Start
 
-```
+```bash
 # install dependencies
 yarn install
 
