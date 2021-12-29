@@ -46,6 +46,12 @@ function main() {
   player.position.z = 0
 
   inputController.registerKeyDownEvent({
+    key: 'c', event: () => {
+      app.isScreenShooting = true;
+    }
+  })
+
+  inputController.registerKeyDownEvent({
     key: 'n', event: () => {
       app.currentSelectLight = app.currentSelectLight === 'DAY' ? 'NIGHT' : 'DAY'
     }

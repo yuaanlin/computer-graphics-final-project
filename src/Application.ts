@@ -106,6 +106,16 @@ class Application {
     };
   }
 
+  private _isScreenShooting = false;
+
+  get isScreenShooting(): boolean {
+    return this._isScreenShooting;
+  }
+
+  set isScreenShooting(value: boolean) {
+    this._isScreenShooting = value;
+  }
+
   private _currentSelectLight: 'DAY' | 'NIGHT' = 'DAY';
 
   get currentSelectLight(): "DAY" | "NIGHT" {
@@ -447,6 +457,17 @@ class Application {
             }
         })
     })
+
+    if (this.isScreenShooting) {
+      this.isScreenShooting = false;
+      const canvas = document.getElementById(
+        'glCanvas') as unknown as HTMLCanvasElement;
+      if (!canvas) return;
+      var link = document.createElement('a');
+      link.download = "screenshot.png";
+      link.href = canvas.toDataURL("png");
+      link.click();
+    }
 
     requestAnimationFrame(this.render.bind(this));
   }
